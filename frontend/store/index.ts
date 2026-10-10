@@ -89,7 +89,19 @@ export const actions: ActionTree<RootState, RootState> = {
 	},
 
 	async updateTasks(context, tasks: Task[]) {
-		await this.$axios.$put('/api/tasks', { tasks });
+		try {
+			await this.$axios.$put('/api/tasks', { tasks });
+		}
+		catch (err: any) {
+			// 409: task changed elsewhere (OpenClaw/CLI). Show it and reload fresh data.
+			const status = err.response?.status;
+			context.commit('setNotification', {
+				color: 'error',
+				text: status === 409 || status === 400 ? err.response.data : 'Error al guardar la tarea'
+			});
+			await context.dispatch('fetchTasks');
+			throw err;
+		}
 		// Refresh
 		await context.dispatch('fetchTasks');
 	},

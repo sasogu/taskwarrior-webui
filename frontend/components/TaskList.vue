@@ -384,12 +384,17 @@ export default defineComponent({
 		};
 
 		const completeTasks = async (tasks: Task[]) => {
-			await store.dispatch('updateTasks', tasks.map(task => {
-				return {
-					...task,
-					status: 'completed'
-				};
-			}));
+			try {
+				await store.dispatch('updateTasks', tasks.map(task => {
+					return {
+						...task,
+						status: 'completed'
+					};
+				}));
+			}
+			catch {
+				return;
+			}
 			selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 			store.commit('setNotification', {
 				color: 'success',
@@ -413,12 +418,17 @@ export default defineComponent({
 		const restoreTasks = (tasks: Task[]) => {
 			confirmation.text = 'Are you sure to restore the task(s)?';
 			confirmation.handler = async () => {
-				await store.dispatch('updateTasks', tasks.map(task => {
-					return {
-						...task,
-						status: 'pending'
-					};
-				}));
+				try {
+					await store.dispatch('updateTasks', tasks.map(task => {
+						return {
+							...task,
+							status: 'pending'
+						};
+					}));
+				}
+				catch {
+					return;
+				}
 				selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 				store.commit('setNotification', {
 					color: 'success',

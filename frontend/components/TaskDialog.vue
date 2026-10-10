@@ -218,6 +218,7 @@ export default defineComponent({
 		const submit = async () => {
 			const valid = (formRef.value as any).validate();
 			if (valid) {
+				try {
 				await store.dispatch('updateTasks', [{
 					...formData.value,
 					annotations: formData.value.annotations || [],
@@ -229,6 +230,11 @@ export default defineComponent({
 					priority: formData.value.priority === 'N' ? undefined : formData.value.priority,
 					recur: recur.value ? formData.value.recur : undefined
 				}]);
+				}
+				catch {
+					// Error already notified by the store
+					return;
+				}
 				store.commit('setNotification', {
 					color: 'success',
 					text: `Successfully ${props.task ? 'update' : 'create'} the task`

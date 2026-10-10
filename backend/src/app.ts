@@ -5,8 +5,8 @@ import * as logger from 'koa-logger';
 import * as qs from 'koa-qs';
 
 import tasksRouter from './tasks';
-import syncRouter from './sync';
-import { TaskError } from 'taskwarrior-lib';
+import { TaskError } from './taskwarrior';
+import serveStatic from './static';
 
 const app = new Koa();
 
@@ -20,8 +20,9 @@ app.use(async (ctx, next) => {
 	}
 	catch (err) {
 		if (err instanceof TaskError) {
-			(err as any).expose = true;
-			(err as any).status = 400;
+			ctx.status = err.status;
+			ctx.body = err.message;
+			return;
 		}
 		throw err;
 	}
@@ -29,13 +30,14 @@ app.use(async (ctx, next) => {
 
 const router = new Router();
 router.use('/tasks', tasksRouter.routes());
-router.use('/sync', syncRouter.routes());
 
-app.use(router.routes());
+app.use(router.prefix('/api').routes());
 app.use(router.allowedMethods());
+app.use(serveStatic(process.env.STATIC_DIR || '/static'));
 
 const prod = process.env.NODE_ENV === 'production';
 const addr = prod ? '0.0.0.0' : 'localhost';
-app.listen(3000, addr);
+const port = +(process.env.PORT || 8080);
+app.listen(port, addr);
 
-console.log(`Server listening on http://${addr}:3000`);
+console.log(`Server listening on http://${addr}:${port}`);

@@ -1,6 +1,5 @@
 import * as Router from '@koa/router';
-
-import taskwarrior from './taskwarrior';
+import * as taskwarrior from './taskwarrior';
 import { Task } from "taskwarrior-lib";
 
 const router = new Router();
@@ -18,8 +17,9 @@ router.put('/', async ctx => {
 });
 
 router.delete('/', async ctx => {
-	const tasks = ctx.query.tasks as string[];
-	const msg = taskwarrior.del(tasks.map(t => ({ uuid: t })));
+	const query = ctx.query.tasks;
+	const tasks = Array.isArray(query) ? query : [query];
+	const msg = taskwarrior.del(tasks);
 	console.log(msg);
 	ctx.status = 200;
 });
