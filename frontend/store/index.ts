@@ -20,7 +20,11 @@ export const state = () => ({
 export type RootState = ReturnType<typeof state>;
 
 export const getters: GetterTree<RootState, RootState> = {
-	projects: state => state.tasks.map(task => task.project).filter(p => p !== undefined),
+	// Only projects that still have pending or waiting tasks, sorted and without duplicates
+	projects: state => [...new Set(state.tasks
+		.filter(task => task.status === 'pending' || task.status === 'waiting')
+		.map(task => task.project)
+		.filter((p): p is string => Boolean(p)))].sort(),
 	tags: state => state.tasks.reduce((tags: string[], task) => {
 		return task.tags ? tags.concat(task.tags) : tags;
 	}, [])
