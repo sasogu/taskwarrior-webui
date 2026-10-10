@@ -11,8 +11,28 @@ import serveStatic from './static';
 const app = new Koa();
 
 qs(app);
-app.use(bodyParser());
 app.use(logger());
+
+// Authentication = Tailscale identity. Tailscale Serve sets Tailscale-User-Login
+// for requests coming from tailnet users; the container is only published on
+// 127.0.0.1, so Serve is the only way in. Fails closed if not configured.
+const allowedLogins = (process.env.ALLOWED_LOGINS || '')
+	.split(',').map(l => l.trim().toLowerCase()).filter(Boolean);
+if (allowedLogins.length === 0)
+	throw new Error('ALLOWED_LOGINS is not set');
+
+app.use(async (ctx, next) => {
+	const login = (ctx.get('Tailscale-User-Login') || '').toLowerCase();
+	if (!allowedLogins.includes(login)) {
+		console.warn(`denied ${ctx.method} ${ctx.path} login=${JSON.stringify(login)}`);
+		ctx.status = 403;
+		ctx.body = 'Forbidden';
+		return;
+	}
+	await next();
+});
+
+app.use(bodyParser());
 
 app.use(async (ctx, next) => {
 	try {
