@@ -6,7 +6,7 @@
 			:text="confirmation.text"
 			@yes="confirmation.handler"
 		/>
-		<TaskDialog v-model="showTaskDialog" :task="currentTask || undefined" />
+		<TaskDialog v-model="showTaskDialog" :task="currentTask || undefined" :parent-task="parentTask || undefined" />
 		<ColumnDialog v-model="showColumnDialog" :active-columns="headers"/>
 		<v-row class="px-4 pt-4">
 			<v-btn-toggle v-model="status" mandatory background-color="rgba(0, 0, 0, 0)">
@@ -39,7 +39,9 @@
 
   <v-row class="px-4 pt-4">
 		<v-data-table
-			:items="classifiedTasks[status]"
+			:items="rootItems"
+			:expanded.sync="expanded"
+			show-expand
 			:headers="filteredHeaders"
 			show-select
 			item-key="uuid"
@@ -138,6 +140,22 @@
 
 			<template v-slot:item.description="{ item }">
 				<span v-html="linkify(item.description)" />
+				<v-chip v-if="children(item).length" small class="ml-2" :title="'Subtareas completadas: ' + progress(item)">{{ progress(item) }}</v-chip>
+				<div v-if="parentDescription(item)" class="caption text--secondary">Subtarea de: {{ parentDescription(item) }}</div>
+			</template>
+
+			<template v-slot:item.data-table-expand="{ item, isExpanded, expand }">
+				<v-btn v-if="children(item).length" icon small
+					:aria-label="isExpanded ? 'Ocultar subtareas' : 'Mostrar subtareas'" @click="expand(!isExpanded)">
+					<v-icon>{{ isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
+				</v-btn>
+			</template>
+			<template v-slot:expanded-item="{ item, headers }">
+				<td :colspan="headers.length" class="py-2">
+					<SubtaskTree :parent="item" :tasks="tasks"
+						@add="newSubtask" @edit="editTask" @complete="completeTasks"
+						@restore="restoreTasks" @delete="deleteTasks" />
+				</td>
 			</template>
 
 			<template v-if="status === 'waiting'" v-slot:item.wait="{ item }">
@@ -168,6 +186,8 @@
 			</template>
 
 			<template v-slot:item.actions="{ item }">
+				<v-icon v-if="item.status !== 'deleted' && item.status !== 'recurring' && !item.recur"
+					class="ml-2" size="20px" title="Añadir subtarea" @click="newSubtask(item)">mdi-plus</v-icon>
 				<v-icon
 					v-show="status === 'pending'"
 					size="20px"
@@ -220,6 +240,8 @@ import moment from 'moment';
 import urlRegex from 'url-regex-safe';
 import normalizeUrl from 'normalize-url';
 import { accessorType  } from "../store";
+import SubtaskTree from './SubtaskTree.vue';
+import { TreeTask, childrenOf, descendantsOf, progressOf, rootTasks } from '../utils/hierarchy';
 
 function displayDate(str?: string) {
 	if (!str)
@@ -338,7 +360,16 @@ export default defineComponent({
 				}
 			}));
 		}
+		// Vue 2 unwraps refs on the reactive object; retain the original refs
+		// separately for script-side access as well as the template's arrays.
+		const statusLists = new Map(Object.entries(tempTasks));
 		const classifiedTasks = reactive(tempTasks);
+		const rootItems = computed(() => rootTasks(statusLists.get(status.value)!.value, props.tasks));
+		const expanded = ref([] as Task[]);
+		const children = (task: TreeTask) => childrenOf(task, props.tasks);
+		const progress = (task: TreeTask) => progressOf(task, store.state.tasks);
+		const parentDescription = (task: TreeTask) => task.webparent
+			? (store.state.tasks as TreeTask[]).find(parent => parent.uuid === task.webparent)?.description : '';
 
 		const refresh = () => {
 			store.dispatch('fetchTasks');
@@ -353,6 +384,7 @@ export default defineComponent({
 
 		const showTaskDialog = ref(false);
 		const currentTask: Ref<Task | null> = ref(null);
+		const parentTask: Ref<TreeTask | null> = ref(null);
 
 		const showSyncBtn = computed(() => {
 			return store.state.settings.autoSync !== '0';
@@ -374,16 +406,25 @@ export default defineComponent({
 		};
 
 		const newTask = () => {
+			parentTask.value = null;
 			showTaskDialog.value = true;
 			currentTask.value = null;
 		};
 
 		const editTask = (task: Task) => {
+			parentTask.value = null;
 			showTaskDialog.value = true;
 			currentTask.value = _.cloneDeep(task);
 		};
 
-		const completeTasks = async (tasks: Task[]) => {
+		const newSubtask = (task: TreeTask) => {
+			currentTask.value = null;
+			parentTask.value = task;
+			if (!expanded.value.some(value => value.uuid === task.uuid)) expanded.value.push(task);
+			showTaskDialog.value = true;
+		};
+
+		const applyCompletion = async (tasks: Task[]) => {
 			try {
 				await store.dispatch('updateTasks', tasks.map(task => {
 					return {
@@ -402,10 +443,23 @@ export default defineComponent({
 			});
 		};
 
+		const completeTasks = (tasks: Task[]) => {
+			const selectedIds = new Set(tasks.map(task => task.uuid));
+			const unfinished = new Set(tasks.flatMap(task => descendantsOf(task, store.state.tasks))
+				.filter(task => task.status !== 'completed' && !selectedIds.has(task.uuid)).map(task => task.uuid));
+			confirmation.title = 'Completar tarea';
+			confirmation.text = '¿Marcar como terminada(s)?\n' + tasks.map(task => '• ' + task.description).join('\n') +
+				(unfinished.size ? `\nHay ${unfinished.size} subtarea(s) pendientes. No se completarán automáticamente.` : '');
+			confirmation.handler = () => { void applyCompletion(tasks); };
+			showConfirmationDialog.value = true;
+		};
+
 		const deleteTasks = (tasks: Task[]) => {
+			confirmation.title = 'Eliminar tarea';
 			confirmation.text = 'Are you sure to delete the task(s)?';
 			confirmation.handler = async () => {
-				await store.dispatch('deleteTasks', tasks);
+				try { await store.dispatch('deleteTasks', tasks); }
+				catch { return; }
 				selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 				store.commit('setNotification', {
 					color: 'success',
@@ -416,6 +470,7 @@ export default defineComponent({
 		};
 
 		const restoreTasks = (tasks: Task[]) => {
+			confirmation.title = 'Restaurar tarea';
 			confirmation.text = 'Are you sure to restore the task(s)?';
 			confirmation.handler = async () => {
 				try {
@@ -454,6 +509,11 @@ export default defineComponent({
 			headers,
 			filteredHeaders,
 			classifiedTasks,
+			rootItems,
+			expanded,
+			children,
+			progress,
+			parentDescription,
 			status,
 			allStatus,
 			statusIcons,
@@ -462,6 +522,8 @@ export default defineComponent({
 			syncTasks,
 			newTask,
 			currentTask,
+			parentTask,
+			newSubtask,
 			editTask,
 			deleteTasks,
 			completeTasks,
@@ -476,6 +538,7 @@ export default defineComponent({
 			TaskDialog,
 			ConfirmationDialog,
 			ColumnDialog,
+			SubtaskTree,
 		};
 	}
 });

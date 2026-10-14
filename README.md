@@ -12,6 +12,9 @@ Responsive Web UI for Taskwarrior based on Vue.js and Koa.js.
 
 ## Features
 
+Local fork: [nested subtasks](./docs/SUBTASKS.md), with a parent selector,
+foldable trees and completion progress, stored in Taskwarrior 2.6.2.
+
 * Responsive layouts
 * Material Design UI
 * PWA support

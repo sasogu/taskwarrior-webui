@@ -7,7 +7,7 @@
 	>
 		<v-card>
 			<v-card-title>
-				{{ task ? 'Edit Task' : 'New Task' }}
+				{{ task ? 'Edit Task' : parentTask ? 'Nueva subtarea' : 'New Task' }}
 			</v-card-title>
 			<v-card-text>
 				<v-form ref="formRef" lazy-validation>
@@ -23,6 +23,17 @@
 						:items="projects"
 						hide-selected
 						label="Project"
+					/>
+					<v-autocomplete
+						v-model="formData.webparent"
+						:items="parentOptions"
+						item-text="description"
+						item-value="uuid"
+						label="Tarea principal"
+						hint="Opcional. Deja el campo vacío para que sea una tarea independiente."
+						persistent-hint
+						clearable
+						:disabled="recur"
 					/>
 					<v-combobox
 						v-model="formData.tags"
@@ -58,7 +69,7 @@
 						/>
 					</v-row>
 					<v-row class="px-3">
-						<v-checkbox v-model="recur" class="mr-3" label="Recur" />
+						<v-checkbox v-model="recur" class="mr-3" label="Recur" :disabled="!!formData.webparent" />
 						<v-text-field
 							label="period*"
 							v-model="formData.recur"
@@ -133,12 +144,14 @@
 import { defineComponent, useStore, watch, computed, ref } from '@nuxtjs/composition-api';
 import { Task } from 'taskwarrior-lib';
 import { accessorType  } from "../store";
+import { TreeTask, descendantsOf } from '../utils/hierarchy';
 
 export default defineComponent({
 	props: {
 		value: Boolean,
+		parentTask: { type: Object as () => TreeTask, required: false },
 		task: {
-			type: Object as () => Task,
+			type: Object as () => TreeTask,
 			required: false
 		}
 	},
@@ -147,6 +160,14 @@ export default defineComponent({
 
 		const projects = computed(() => store.getters.projects);
 		const tags = computed(() => store.getters.tags);
+		const parentOptions = computed(() => {
+			const all = store.state.tasks as TreeTask[];
+			const excluded = new Set(props.task ? [props.task.uuid,
+				...descendantsOf(props.task, all).map(task => task.uuid)] : []);
+			return all.filter(task => !excluded.has(task.uuid) &&
+				(task.uuid === props.task?.webparent || (task.status !== 'deleted' &&
+					task.status !== 'recurring' && !task.recur)));
+		});
 
 		const showDialog = computed({
 			get: () => props.value,
@@ -162,7 +183,8 @@ export default defineComponent({
 		const recur = ref(Boolean(props.task?.recur));
 		const formData = ref({
 			description: '',
-			project: '',
+			project: props.parentTask?.project || '',
+			webparent: props.parentTask?.uuid || '',
 			scheduled: '',
 			due: '',
 			until: '',
@@ -177,7 +199,8 @@ export default defineComponent({
 		const reset = () => {
 			formData.value = {
 				description: '',
-				project: '',
+				project: props.parentTask?.project || '',
+				webparent: props.parentTask?.uuid || '',
 				scheduled: '',
 				due: '',
 				until: '',
@@ -196,7 +219,7 @@ export default defineComponent({
 			addAnnotationDescription.value = "";
 		};
 
-		watch(() => props.task, () => {
+		watch(() => [props.task, props.parentTask, props.value], () => {
 			reset();
 		});
 
@@ -223,6 +246,7 @@ export default defineComponent({
 					...formData.value,
 					annotations: formData.value.annotations || [],
 					project: formData.value.project || undefined,
+					webparent: formData.value.webparent || undefined,
 					scheduled: formData.value.scheduled || undefined,
 					due: formData.value.due || undefined,
 					until: formData.value.until || undefined,
@@ -255,6 +279,7 @@ export default defineComponent({
 			formRef,
 			tags,
 			projects,
+			parentOptions,
 			priorities,
 			recur,
 			formData,

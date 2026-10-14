@@ -1,14 +1,14 @@
 <template>
 	<v-dialog
 		v-model="showDialog"
-		max-width="300px"
+		max-width="480px"
 		@keydown.esc="handler('no')"
 	>
 		<v-card>
 			<v-card-title>
 				{{ title }}
 			</v-card-title>
-			<v-card-text>
+			<v-card-text style="white-space: pre-line; overflow-wrap: anywhere">
 				{{ text }}
 			</v-card-text>
 			<v-card-actions>

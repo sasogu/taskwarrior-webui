@@ -85,9 +85,19 @@ export const actions: ActionTree<RootState, RootState> = {
 	},
 
 	async deleteTasks(context, tasks: Task[]) {
-		await this.$axios.$delete('/api/tasks', {
-			params: { tasks: tasks.map(task => task.uuid) }
-		});
+		try {
+			await this.$axios.$delete('/api/tasks', {
+				params: { tasks: tasks.map(task => task.uuid) }
+			});
+		}
+		catch (err: any) {
+			context.commit('setNotification', {
+				color: 'error',
+				text: err.response?.status === 400 ? err.response.data : 'Error al eliminar la tarea'
+			});
+			await context.dispatch('fetchTasks');
+			throw err;
+		}
 		// Refresh
 		await context.dispatch('fetchTasks');
 	},

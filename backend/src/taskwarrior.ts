@@ -5,6 +5,7 @@
 // Every call here uses execFileSync with an argument array: no shell involved.
 import { execFileSync } from 'child_process';
 import { Task } from 'taskwarrior-lib';
+import { validateHierarchy } from './hierarchy';
 
 export class TaskError extends Error {
 	status: number;
@@ -30,6 +31,8 @@ const RC = [
 	'rc.bulk=0',
 	'rc.verbose=nothing',
 	'rc.color=off',
+	'rc.uda.webparent.type=string',
+	'rc.uda.webparent.label=Tarea principal',
 	'rc.hooks=on'
 ];
 
@@ -51,7 +54,7 @@ function run(args: string[], input?: string): string {
 export function checkUuid(uuid: unknown): string {
 	if (typeof uuid !== 'string' || !UUID_RE.test(uuid))
 		throw new TaskError('Invalid uuid');
-	return uuid;
+	return uuid.toLowerCase();
 }
 
 // "calc" receives the expression as separate argv words, never through a shell.
@@ -102,12 +105,14 @@ export function update(tasks: Task[]): string {
 
 	const prepared = tasks.map(task => {
 		const t: any = { ...task };
+		if (t.webparent === '' || t.webparent === null) delete t.webparent;
+		if (typeof t.webparent === 'string') t.webparent = t.webparent.toLowerCase();
 		checkPeriod(t.recur);
 		for (const field of DATE_FIELDS)
 			t[field] = calcDate(t[field]);
 
 		if (t.uuid !== undefined) {
-			checkUuid(t.uuid);
+			t.uuid = checkUuid(t.uuid);
 			const current: any = loadOne(t.uuid);
 			if (current && current.modified !== t.modified)
 				throw new TaskError('La tarea ha cambiado desde que se cargó. Recarga e inténtalo de nuevo.', 409);
@@ -121,6 +126,10 @@ export function update(tasks: Task[]): string {
 		}
 		return t;
 	});
+	try {
+		validateHierarchy(load(), prepared);
+	}
+	catch (error: any) { throw new TaskError(error.message); }
 
 	return run(['import'], JSON.stringify(prepared));
 }
@@ -128,5 +137,9 @@ export function update(tasks: Task[]): string {
 export function del(uuids: unknown[]): string {
 	if (!Array.isArray(uuids) || uuids.length === 0)
 		throw new TaskError('No tasks given');
-	return run([...uuids.map(checkUuid), 'delete']);
+	const selected = new Set(uuids.map(checkUuid));
+	const children = (load() as any[]).some(task => task.status !== 'deleted' &&
+		selected.has(task.webparent) && !selected.has(task.uuid));
+	if (children) throw new TaskError('Antes de eliminar esta tarea, mueve o elimina sus subtareas.');
+	return run([...selected, 'delete']);
 }
