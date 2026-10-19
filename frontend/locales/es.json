@@ -102,5 +102,12 @@
   "Esta relación crearía un ciclo entre subtareas.": "Esta relación crearía un ciclo entre subtareas.",
   "Choose a day in the calendar or type a date or expression such as tomorrow.": "Elige un día en el calendario o escribe una fecha o una expresión como tomorrow.",
   "Time": "Hora",
-  "Choose a date first": "Elige primero una fecha"
+  "Choose a date first": "Elige primero una fecha",
+  "Edit annotation": "Editar anotación",
+  "Delete annotation": "Eliminar anotación",
+  "Save annotation": "Guardar anotación",
+  "Cancel editing": "Cancelar edición",
+  "Delete this annotation?": "¿Eliminar esta anotación?",
+  "Annotation changes are applied when you save the task.": "Los cambios en las anotaciones se aplican al guardar la tarea.",
+  "Save or cancel the annotation edit before saving the task.": "Guarda o cancela la edición de la anotación antes de guardar la tarea."
 }

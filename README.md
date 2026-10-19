@@ -29,6 +29,11 @@ foldable trees and completion progress, stored in Taskwarrior 2.6.2.
 * Sync with a taskserver
 
 
+Annotations can be edited or deleted from the task form. Deleting asks for
+confirmation with the annotation text. Annotation changes are applied when the
+task is saved; Cancel and Reset discard drafts. Editing preserves the original
+annotation timestamp, and stale task updates retain the existing conflict check.
+
 ## Languages
 
 Use the language menu in the top bar to choose English, Español or Català.

@@ -87,35 +87,7 @@
 						/>
 					</v-radio-group>
 
-					<v-list subheader dense flat>
-						<v-subheader>{{ $t('Annotations') }}</v-subheader>
-						<v-list-item>
-							<v-list-item-content>
-								<v-text-field
-									:placeholder="$t('Annotation text')"
-									v-model="addAnnotationDescription"
-								/>
-							</v-list-item-content>
-							<v-list-item-action>
-								<v-btn
-									class="primary ml-1"
-									fab
-									dark
-									x-small
-									:title="$t('Add annotation')"
-									@click="addAnnotation"
-								>
-									<v-icon>mdi-plus</v-icon>
-								</v-btn>
-							</v-list-item-action>
-						</v-list-item>
-						<v-list-item v-for="a in formData.annotations" :key="a.entry">
-							<v-list-item-content>
-								<v-list-item-title v-text="a.description" class="text-wrap"></v-list-item-title>
-								<v-list-item-subtitle v-text="a.entry"></v-list-item-subtitle>
-							</v-list-item-content>
-						</v-list-item>
-					</v-list>
+					<TaskAnnotations :key="annotationRevision" v-model="formData.annotations" @editing="annotationEditing = $event" />
 				</v-form>
 			</v-card-text>
 
@@ -127,7 +99,7 @@
 				<v-btn @click="reset">
 					{{ $t('Reset') }}
 				</v-btn>
-				<v-btn color="primary" @click="submit">
+				<v-btn color="primary" :disabled="annotationEditing" @click="submit">
 					{{ $t('Submit') }}
 				</v-btn>
 			</v-card-actions>
@@ -136,6 +108,7 @@
 </template>
 
 <script lang="ts">
+import cloneDeep from 'lodash/cloneDeep';
 import { t } from '../utils/i18n';
 import { defineComponent, useStore, watch, computed, ref } from '@nuxtjs/composition-api';
 import { Task } from 'taskwarrior-lib';
@@ -174,7 +147,8 @@ export default defineComponent({
 			(str: string) => Boolean(str) || t('Required')
 		];
 
-		const addAnnotationDescription = ref('');
+		const annotationEditing = ref(false);
+		const annotationRevision = ref(0);
 
 		const recur = ref(Boolean(props.task?.recur));
 		const formData = ref({
@@ -189,7 +163,7 @@ export default defineComponent({
 			annotations: [] as {entry: string; description: string}[],
 			priority: 'N',
 			recur: '',
-			...props.task
+			...cloneDeep(props.task)
 		});
 
 		const reset = () => {
@@ -205,14 +179,15 @@ export default defineComponent({
 				annotations: [] as {entry: string; description: string}[],
 				priority: 'N',
 				recur: '',
-				...props.task
+				...cloneDeep(props.task)
 			};
 			recur.value = Boolean(props.task?.recur);
 			if (formRef.value) {
 				(formRef.value as any).resetValidation();
 			}
 
-			addAnnotationDescription.value = "";
+			annotationEditing.value = false;
+			annotationRevision.value++;
 		};
 
 		watch(() => [props.task, props.parentTask, props.value], () => {
@@ -221,20 +196,12 @@ export default defineComponent({
 
 		const formRef = ref(null);
 
-		const addAnnotation = () => {
-			formData.value.annotations.push({
-				entry: new Date().toISOString(),
-				description: addAnnotationDescription.value
-			});
-
-			addAnnotationDescription.value = "";
-		};
-
 		const closeDialog = () => {
 			showDialog.value = false;
 			reset();
 		};
 		const submit = async () => {
+			if (annotationEditing.value) return;
 			const valid = (formRef.value as any).validate();
 			if (valid) {
 				try {
@@ -279,8 +246,8 @@ export default defineComponent({
 			priorities,
 			recur,
 			formData,
-			addAnnotationDescription,
-			addAnnotation,
+			annotationEditing,
+			annotationRevision,
 			closeDialog,
 			reset,
 			submit,
