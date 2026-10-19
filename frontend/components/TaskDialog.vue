@@ -44,29 +44,24 @@
 						label="Tags"
 						hint="Press tab or enter to add new tags"
 					/>
-					<v-row class="px-3">
-						<v-text-field
-							class="mr-3"
-							v-model="formData.due"
-							:label="recur ? 'Due*' : 'Due'"
-							:rules="recur ? requiredRules : []"
-							:required="recur"
-						/>
-						<v-text-field
-							v-model="formData.until"
-							label="Until"
-						/>
-					</v-row>
-					<v-row class="px-3">
-						<v-text-field
-							class="mr-3"
-							v-model="formData.scheduled"
-							label="Scheduled"
-						/>
-						<v-text-field
-							v-model="formData.wait"
-							label="Wait"
-						/>
+					<v-row>
+						<v-col cols="12" sm="6" class="py-0">
+							<task-date-field
+								v-model="formData.due"
+								:label="recur ? 'Vencimiento*' : 'Vencimiento'"
+								:rules="recur ? requiredRules : []"
+								:required="recur"
+							/>
+						</v-col>
+						<v-col cols="12" sm="6" class="py-0">
+							<task-date-field v-model="formData.until" label="Repetir hasta" />
+						</v-col>
+						<v-col cols="12" sm="6" class="py-0">
+							<task-date-field v-model="formData.scheduled" label="Programada" />
+						</v-col>
+						<v-col cols="12" sm="6" class="py-0">
+							<task-date-field v-model="formData.wait" label="Esperar hasta" />
+						</v-col>
 					</v-row>
 					<v-row class="px-3">
 						<v-checkbox v-model="recur" class="mr-3" label="Recur" :disabled="!!formData.webparent" />
