@@ -1,7 +1,7 @@
 <template>
 	<v-dialog v-model="showDialog" max-width="400px" @keydown.esc="closeDialog">
 		<v-card>
-			<v-card-title> Hidden Columns </v-card-title>
+			<v-card-title> {{ $t('Hidden Columns') }} </v-card-title>
 			<v-card-text>
 				<v-form ref="formRef">
 					<v-list-item v-for="c in activeColumns" :key="c.value">

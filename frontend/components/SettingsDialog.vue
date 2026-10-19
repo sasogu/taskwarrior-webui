@@ -6,17 +6,17 @@
 	>
 		<v-card>
 			<v-card-title>
-				Settings
+				{{ $t('Settings') }}
 			</v-card-title>
 			<v-card-text>
 				<v-form ref="formRef">
 					<v-list-item>
 						<v-list-item-content>
 							<v-list-item-title>
-								Dark
+								{{ $t('Dark') }}
 							</v-list-item-title>
 							<v-list-item-subtitle>
-								default theme
+								{{ $t('Default theme') }}
 							</v-list-item-subtitle>
 						</v-list-item-content>
 						<v-list-item-action>
@@ -27,10 +27,10 @@
 					<v-list-item>
 						<v-list-item-content>
 							<v-list-item-title>
-								Auto Refresh
+								{{ $t('Auto Refresh') }}
 							</v-list-item-title>
 							<v-list-item-subtitle>
-								in minutes (0 means no refresh)
+								{{ $t('In minutes (0 disables refresh)') }}
 							</v-list-item-subtitle>
 						</v-list-item-content>
 						<v-list-item-action>
@@ -45,14 +45,14 @@
 					<v-list-item>
 						<v-list-item-content>
 							<v-list-item-title class="pb-1">
-								Auto Sync
-								<v-icon size="18px" class="ml-2" @click="sync" title="Sync immediately">
+								{{ $t('Auto Sync') }}
+								<v-icon size="18px" class="ml-2" @click="sync" :title="$t('Sync immediately')">
 									mdi-sync
 								</v-icon>
 							</v-list-item-title>
 							<v-list-item-subtitle>
-								in minutes (0 means no auto sync)<br />
-								run <code>task sync</code> periodically
+								{{ $t('In minutes (0 disables auto sync)') }}<br />
+								{{ $t('Run task sync periodically') }}
 							</v-list-item-subtitle>
 						</v-list-item-content>
 						<v-list-item-action>
@@ -68,13 +68,13 @@
 			<v-card-actions>
 				<v-spacer />
 				<v-btn text @click="closeDialog">
-					Cancel
+					{{ $t('Cancel') }}
 				</v-btn>
 				<v-btn @click="reset">
-					Reset
+					{{ $t('Reset') }}
 				</v-btn>
 				<v-btn color="primary" @click="save">
-					Save
+					{{ $t('Save') }}
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -82,6 +82,7 @@
 </template>
 
 <script lang="ts">
+import { t } from '../utils/i18n';
 import { watch, defineComponent, useStore, computed, ref, reactive } from '@nuxtjs/composition-api';
 import { accessorType  } from "../store";
 
@@ -99,7 +100,7 @@ export default defineComponent({
 		});
 
 		const numberRules = [
-			(str: string) => (str && !isNaN(+str) && +str >= 0) || 'invalid'
+			(str: string) => (str && !isNaN(+str) && +str >= 0) || t('Invalid number')
 		];
 
 		const formRef = ref(null);

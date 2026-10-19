@@ -16,7 +16,7 @@
 					v-bind="attrs"
 					@click="snackbar = false"
 				>
-					Close
+					{{ $t('Close') }}
 				</v-btn>
 			</template>
 		</v-snackbar>
@@ -29,13 +29,27 @@
 				Taskwarrior WebUI
 			</v-toolbar-title>
 			<v-spacer />
-			<v-icon class="mr-4" size="28px" @click="dark = !dark" title="Theme">
+			<v-menu offset-y>
+				<template v-slot:activator="{ on, attrs }">
+					<v-btn text small class="px-2" :title="$t('Language')" :aria-label="$t('Language')" v-bind="attrs" v-on="on">
+						<v-icon small class="mr-1">mdi-translate</v-icon>
+						{{ $language.toUpperCase() }}
+					</v-btn>
+				</template>
+				<v-list dense>
+					<v-list-item v-for="language in languageOptions" :key="language.value"
+						:input-value="$language === language.value" @click="$language = language.value">
+						<v-list-item-title>{{ language.text }}</v-list-item-title>
+					</v-list-item>
+				</v-list>
+			</v-menu>
+			<v-icon class="mr-4" size="28px" @click="dark = !dark" :title="$t('Theme')">
 				{{ dark ? 'mdi-brightness-4' : 'mdi-brightness-7' }}
 			</v-icon>
 			<v-icon
 				class="mr-2"
 				size="28px"
-				title="Settings"
+				:title="$t('Settings')"
 				@click="settingsDialog = true"
 			>
 				mdi-cog
@@ -53,9 +67,13 @@
 <script lang="ts">
 import { defineComponent, useContext, useStore, computed, onErrorCaptured, ref, watch } from '@nuxtjs/composition-api';
 import SettingsDialog from '../components/SettingsDialog.vue';
+import { localeState } from '../utils/i18n';
 import { accessorType  } from "../store";
 
 export default defineComponent({
+	head() {
+		return { htmlAttrs: { lang: localeState.language } };
+	},
 	setup(_props, ctx) {
 		const context = useContext();
 		const store = useStore<typeof accessorType>();
@@ -101,6 +119,11 @@ export default defineComponent({
 		});
 
 		return {
+			languageOptions: [
+				{ value: 'es', text: 'Español' },
+				{ value: 'en', text: 'English' },
+				{ value: 'ca', text: 'Català' }
+			],
 			dark,
 			snackbar,
 			notification,

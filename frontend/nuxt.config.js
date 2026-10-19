@@ -45,6 +45,7 @@ export default {
   ** https://nuxtjs.org/guide/plugins
   */
 	plugins: [
+		{ src: '~/plugins/i18n.ts', mode: 'client' }
 	],
 	/*
   ** Auto import components

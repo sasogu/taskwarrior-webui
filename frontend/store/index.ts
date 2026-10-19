@@ -1,3 +1,4 @@
+import { t } from '../utils/i18n';
 import { ActionTree, MutationTree, GetterTree } from 'vuex';
 import { Task } from 'taskwarrior-lib';
 import { getAccessorType } from 'typed-vuex';
@@ -93,7 +94,7 @@ export const actions: ActionTree<RootState, RootState> = {
 		catch (err: any) {
 			context.commit('setNotification', {
 				color: 'error',
-				text: err.response?.status === 400 ? err.response.data : 'Error al eliminar la tarea'
+				text: t(err.response?.status === 400 ? err.response.data : 'Could not delete task.')
 			});
 			await context.dispatch('fetchTasks');
 			throw err;
@@ -111,7 +112,7 @@ export const actions: ActionTree<RootState, RootState> = {
 			const status = err.response?.status;
 			context.commit('setNotification', {
 				color: 'error',
-				text: status === 409 || status === 400 ? err.response.data : 'Error al guardar la tarea'
+				text: t(status === 409 || status === 400 ? err.response.data : 'Could not save task.')
 			});
 			await context.dispatch('fetchTasks');
 			throw err;

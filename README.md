@@ -12,7 +12,7 @@ Responsive Web UI for Taskwarrior based on Vue.js and Koa.js.
 
 ## Features
 
-Date fields include a Spanish calendar picker (Monday first) for due, until,
+Date fields include a localized calendar picker (Monday first) for due, until,
 scheduled and wait, alongside editable Taskwarrior date expressions. Selecting a
 day sets a date at local midnight; opening the calendar preserves existing times.
 
@@ -27,6 +27,15 @@ foldable trees and completion progress, stored in Taskwarrior 2.6.2.
 * Support for light and dark themes
 * Sync with a taskserver
 
+
+## Languages
+
+Use the language menu in the top bar to choose English, Español or Català.
+The first visit follows the browser's language preferences; a manual choice is
+saved in that browser and applies immediately. Forms, task actions, confirmations,
+settings, tables, calendars and relative dates use the selected language.
+Task descriptions, project names and tags are kept as entered. Taskwarrior date
+expressions such as `tomorrow` and `+1w` retain their original syntax.
 
 ## Deployment
 

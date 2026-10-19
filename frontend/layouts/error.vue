@@ -7,7 +7,7 @@
 			{{ error.message }}
 		</div>
 		<NuxtLink to="/">
-			Home page
+			{{ $t('Home page') }}
 		</NuxtLink>
 	</v-app>
 </template>
@@ -15,13 +15,11 @@
 <script lang="ts">
 import { defineComponent } from '@nuxtjs/composition-api';
 import { NuxtError } from '@nuxt/types';
+import { localeState } from '../utils/i18n';
 
 export default defineComponent({
-	data () {
-		return {
-			pageNotFound: '404 Not Found',
-			otherError: 'An error occurred'
-		};
+	head() {
+		return { htmlAttrs: { lang: localeState.language } };
 	},
 
 	props: {

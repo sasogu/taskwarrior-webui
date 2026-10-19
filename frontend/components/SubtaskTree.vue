@@ -3,7 +3,7 @@
 		<div v-for="task in children" :key="task.uuid" class="subtask-node">
 			<div class="subtask-row d-flex align-center py-2">
 				<v-btn v-if="hasChildren(task)" icon small
-					:aria-label="collapsed.includes(task.uuid) ? 'Mostrar subtareas' : 'Ocultar subtareas'"
+					:aria-label="collapsed.includes(task.uuid) ? $t('Show subtasks') : $t('Hide subtasks')"
 					@click="toggle(task.uuid)">
 					<v-icon>{{ collapsed.includes(task.uuid) ? 'mdi-chevron-right' : 'mdi-chevron-down' }}</v-icon>
 				</v-btn>
@@ -13,15 +13,15 @@
 				</v-icon>
 				<div class="subtask-description flex-grow-1">
 					<span :class="{ 'completed-subtask': task.status === 'completed' }">{{ task.description }}</span>
-					<v-chip v-if="hasChildren(task)" x-small class="ml-2" :title="'Subtareas completadas: ' + progress(task)">{{ progress(task) }}</v-chip>
-					<span class="caption ml-2 text--secondary">{{ task.status === 'completed' ? 'Terminada' : 'Pendiente' }}</span>
+					<v-chip v-if="hasChildren(task)" x-small class="ml-2" :title="$t('Completed subtasks') + ': ' + progress(task)">{{ progress(task) }}</v-chip>
+					<span class="caption ml-2 text--secondary">{{ task.status === 'completed' ? $t('Completed') : $t('Pending') }}</span>
 				</div>
 				<div class="subtask-actions d-flex">
-					<v-btn v-if="task.status === 'pending'" icon small title="Completar subtarea" @click="$emit('complete', [task])"><v-icon small>mdi-check</v-icon></v-btn>
-					<v-btn v-if="task.status === 'completed'" icon small title="Restaurar subtarea" @click="$emit('restore', [task])"><v-icon small>mdi-restore</v-icon></v-btn>
-					<v-btn icon small title="Añadir subtarea" @click="$emit('add', task)"><v-icon small>mdi-plus</v-icon></v-btn>
-					<v-btn icon small title="Editar subtarea" @click="$emit('edit', task)"><v-icon small>mdi-pencil</v-icon></v-btn>
-					<v-btn icon small title="Eliminar subtarea" @click="$emit('delete', [task])"><v-icon small>mdi-delete</v-icon></v-btn>
+					<v-btn v-if="task.status === 'pending'" icon small :title="$t('Complete subtask')" @click="$emit('complete', [task])"><v-icon small>mdi-check</v-icon></v-btn>
+					<v-btn v-if="task.status === 'completed'" icon small :title="$t('Restore subtask')" @click="$emit('restore', [task])"><v-icon small>mdi-restore</v-icon></v-btn>
+					<v-btn icon small :title="$t('Add subtask')" @click="$emit('add', task)"><v-icon small>mdi-plus</v-icon></v-btn>
+					<v-btn icon small :title="$t('Edit subtask')" @click="$emit('edit', task)"><v-icon small>mdi-pencil</v-icon></v-btn>
+					<v-btn icon small :title="$t('Delete subtask')" @click="$emit('delete', [task])"><v-icon small>mdi-delete</v-icon></v-btn>
 				</div>
 			</div>
 			<SubtaskTree v-if="hasChildren(task) && !collapsed.includes(task.uuid)"

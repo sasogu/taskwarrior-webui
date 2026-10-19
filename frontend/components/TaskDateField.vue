@@ -5,7 +5,7 @@
 		:rules="rules"
 		:required="required"
 		clearable
-		hint="AAAA-MM-DD o una expresión como tomorrow o +1w"
+		:hint="$t('YYYY-MM-DD or an expression such as tomorrow or +1w')"
 		@input="$emit('input', $event || '')"
 	>
 		<template v-slot:append>
@@ -18,8 +18,8 @@
 				<template v-slot:activator="{ on, attrs }">
 					<v-btn
 						icon small
-						:aria-label="'Abrir calendario: ' + label"
-						:title="'Abrir calendario: ' + label"
+						:aria-label="$t('Open calendar') + ': ' + label"
+						:title="$t('Open calendar') + ': ' + label"
 						v-bind="attrs"
 						v-on="on"
 					>
@@ -28,7 +28,7 @@
 				</template>
 				<v-date-picker
 					:value="calendarDate"
-					locale="es"
+					:locale="$language"
 					:first-day-of-week="1"
 					width="280"
 					@input="selectDate"

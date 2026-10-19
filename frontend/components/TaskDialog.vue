@@ -7,14 +7,14 @@
 	>
 		<v-card>
 			<v-card-title>
-				{{ task ? 'Edit Task' : parentTask ? 'Nueva subtarea' : 'New Task' }}
+				{{ $t(task ? 'Edit Task' : parentTask ? 'New subtask' : 'New Task') }}
 			</v-card-title>
 			<v-card-text>
 				<v-form ref="formRef" lazy-validation>
 					<v-text-field
 						autofocus
 						v-model="formData.description"
-						label="Description*"
+						:label="$t('Description') + '*'"
 						:rules="requiredRules"
 						required
 					/>
@@ -22,15 +22,15 @@
 						v-model="formData.project"
 						:items="projects"
 						hide-selected
-						label="Project"
+						:label="$t('Project')"
 					/>
 					<v-autocomplete
 						v-model="formData.webparent"
 						:items="parentOptions"
 						item-text="description"
 						item-value="uuid"
-						label="Tarea principal"
-						hint="Opcional. Deja el campo vacío para que sea una tarea independiente."
+						:label="$t('Parent task')"
+						:hint="$t('Optional. Leave empty for an independent task.')"
 						persistent-hint
 						clearable
 						:disabled="recur"
@@ -41,32 +41,32 @@
 						hide-selected
 						small-chips
 						multiple
-						label="Tags"
-						hint="Press tab or enter to add new tags"
+						:label="$t('Tags')"
+						:hint="$t('Press tab or enter to add new tags')"
 					/>
 					<v-row>
 						<v-col cols="12" sm="6" class="py-0">
 							<task-date-field
 								v-model="formData.due"
-								:label="recur ? 'Vencimiento*' : 'Vencimiento'"
+								:label="recur ? $t('Due') + '*' : $t('Due')"
 								:rules="recur ? requiredRules : []"
 								:required="recur"
 							/>
 						</v-col>
 						<v-col cols="12" sm="6" class="py-0">
-							<task-date-field v-model="formData.until" label="Repetir hasta" />
+							<task-date-field v-model="formData.until" :label="$t('Until')" />
 						</v-col>
 						<v-col cols="12" sm="6" class="py-0">
-							<task-date-field v-model="formData.scheduled" label="Programada" />
+							<task-date-field v-model="formData.scheduled" :label="$t('Scheduled')" />
 						</v-col>
 						<v-col cols="12" sm="6" class="py-0">
-							<task-date-field v-model="formData.wait" label="Esperar hasta" />
+							<task-date-field v-model="formData.wait" :label="$t('Wait')" />
 						</v-col>
 					</v-row>
 					<v-row class="px-3">
-						<v-checkbox v-model="recur" class="mr-3" label="Recur" :disabled="!!formData.webparent" />
+						<v-checkbox v-model="recur" class="mr-3" :label="$t('Recur')" :disabled="!!formData.webparent" />
 						<v-text-field
-							label="period*"
+							:label="$t('Period') + '*'"
 							v-model="formData.recur"
 							:rules="recur ? requiredRules : []"
 							:required="recur"
@@ -76,23 +76,23 @@
 					<v-radio-group v-model="formData.priority" row hide-details class="align-center">
 						<template v-slot:prepend>
 							<span class="mr-3 subtitle-1">
-								Priority
+								{{ $t('Priority') }}
 							</span>
 						</template>
 						<v-radio
 							v-for="p in priorities"
 							:key="p.text"
-							:label="p.text"
+							:label="$t(p.text)"
 							:value="p.value"
 						/>
 					</v-radio-group>
 
 					<v-list subheader dense flat>
-						<v-subheader>Annotations</v-subheader>
+						<v-subheader>{{ $t('Annotations') }}</v-subheader>
 						<v-list-item>
 							<v-list-item-content>
 								<v-text-field
-									placeholder="Annotation text"
+									:placeholder="$t('Annotation text')"
 									v-model="addAnnotationDescription"
 								/>
 							</v-list-item-content>
@@ -102,7 +102,7 @@
 									fab
 									dark
 									x-small
-									title="Add annotation"
+									:title="$t('Add annotation')"
 									@click="addAnnotation"
 								>
 									<v-icon>mdi-plus</v-icon>
@@ -121,14 +121,14 @@
 
 			<v-card-actions>
 				<v-spacer />
-				<v-btn text @click="closeDialog" width="80px">
-					Cancel
+				<v-btn text @click="closeDialog">
+					{{ $t('Cancel') }}
 				</v-btn>
-				<v-btn @click="reset" width="80px">
-					Reset
+				<v-btn @click="reset">
+					{{ $t('Reset') }}
 				</v-btn>
-				<v-btn color="primary" @click="submit" width="80px">
-					Submit
+				<v-btn color="primary" @click="submit">
+					{{ $t('Submit') }}
 				</v-btn>
 			</v-card-actions>
 		</v-card>
@@ -136,6 +136,7 @@
 </template>
 
 <script lang="ts">
+import { t } from '../utils/i18n';
 import { defineComponent, useStore, watch, computed, ref } from '@nuxtjs/composition-api';
 import { Task } from 'taskwarrior-lib';
 import { accessorType  } from "../store";
@@ -170,7 +171,7 @@ export default defineComponent({
 		});
 
 		const requiredRules = [
-			(str: string) => Boolean(str) || 'Required'
+			(str: string) => Boolean(str) || t('Required')
 		];
 
 		const addAnnotationDescription = ref('');
@@ -256,7 +257,7 @@ export default defineComponent({
 				}
 				store.commit('setNotification', {
 					color: 'success',
-					text: `Successfully ${props.task ? 'update' : 'create'} the task`
+					text: t(props.task ? 'Task updated.' : 'Task created.')
 				});
 				closeDialog();
 			}

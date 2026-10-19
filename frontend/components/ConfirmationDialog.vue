@@ -13,8 +13,8 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-spacer />
-				<v-btn text color="primary" @click="handler('no')">No</v-btn>
-				<v-btn text color="red" @click="handler('yes')">Yes</v-btn>
+				<v-btn text color="primary" @click="handler('no')">{{ $t('No') }}</v-btn>
+				<v-btn text color="red" @click="handler('yes')">{{ $t('Yes') }}</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>

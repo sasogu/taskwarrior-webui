@@ -25,7 +25,7 @@
 					>
 						{{ statusIcons[st] }}
 					</v-icon>
-					{{ st }}
+					{{ $t(st) }}
 					<v-badge
 						v-if="st === 'pending' && classifiedTasks[st].value && classifiedTasks[st].value.length"
 						:content="classifiedTasks[st].value.length"
@@ -60,7 +60,7 @@
 							fab
 							small
 							dark
-							title="Done"
+							:title="$t('Done')"
 							@click="completeTasks(selected)"
 						>
 							<v-icon>mdi-check</v-icon>
@@ -72,7 +72,7 @@
 							fab
 							dark
 							small
-							title="Restore"
+							:title="$t('Restore')"
 							@click="restoreTasks(selected)"
 						>
 							<v-icon>mdi-restore</v-icon>
@@ -83,7 +83,7 @@
 							fab
 							dark
 							small
-							title="Delete"
+							:title="$t('Delete')"
 							@click="deleteTasks(selected)"
 						>
 							<v-icon>mdi-delete</v-icon>
@@ -98,7 +98,7 @@
 							class="green ml-1"
 							fab
 							dark
-							title="Refresh"
+							:title="$t('Refresh')"
 							@click="refresh"
 						>
 							<v-icon>mdi-refresh</v-icon>
@@ -109,7 +109,7 @@
 								class="green ml-1"
 								fab
 								dark
-								title="Sync Tasks"
+								:title="$t('Sync Tasks')"
 								@click="syncTasks"
 							>
 								<v-icon>mdi-sync</v-icon>
@@ -119,7 +119,7 @@
 							class="primary ml-1"
 							fab
 							dark
-							title="New task"
+							:title="$t('New task')"
 							@click="newTask"
 						>
 							<v-icon>mdi-plus</v-icon>
@@ -129,7 +129,7 @@
 							fab
 							dark
 							small
-							title="Configure Columns"
+							:title="$t('Configure Columns')"
 							@click="showColumnDialog = true"
 						>
 							<v-icon>mdi-cogs</v-icon>
@@ -140,13 +140,13 @@
 
 			<template v-slot:item.description="{ item }">
 				<span v-html="linkify(item.description)" />
-				<v-chip v-if="children(item).length" small class="ml-2" :title="'Subtareas completadas: ' + progress(item)">{{ progress(item) }}</v-chip>
-				<div v-if="parentDescription(item)" class="caption text--secondary">Subtarea de: {{ parentDescription(item) }}</div>
+				<v-chip v-if="children(item).length" small class="ml-2" :title="$t('Completed subtasks') + ': ' + progress(item)">{{ progress(item) }}</v-chip>
+				<div v-if="parentDescription(item)" class="caption text--secondary">{{ $t('Subtask of') }}: {{ parentDescription(item) }}</div>
 			</template>
 
 			<template v-slot:item.data-table-expand="{ item, isExpanded, expand }">
 				<v-btn v-if="children(item).length" icon small
-					:aria-label="isExpanded ? 'Ocultar subtareas' : 'Mostrar subtareas'" @click="expand(!isExpanded)">
+					:aria-label="isExpanded ? $t('Hide subtasks') : $t('Show subtasks')" @click="expand(!isExpanded)">
 					<v-icon>{{ isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right' }}</v-icon>
 				</v-btn>
 			</template>
@@ -187,13 +187,13 @@
 
 			<template v-slot:item.actions="{ item }">
 				<v-icon v-if="item.status !== 'deleted' && item.status !== 'recurring' && !item.recur"
-					class="ml-2" size="20px" title="Añadir subtarea" @click="newSubtask(item)">mdi-plus</v-icon>
+					class="ml-2" size="20px" :title="$t('Add subtask')" @click="newSubtask(item)">mdi-plus</v-icon>
 				<v-icon
 					v-show="status === 'pending'"
 					size="20px"
 					class="ml-2"
 					@click="completeTasks([item])"
-					title="Done"
+					:title="$t('Done')"
 				>
 					mdi-check
 				</v-icon>
@@ -202,7 +202,7 @@
 					size="20px"
 					class="ml-2"
 					@click="restoreTasks([item])"
-					title="Restore"
+					:title="$t('Restore')"
 				>
 					mdi-restore
 				</v-icon>
@@ -210,7 +210,7 @@
 					class="ml-2"
 					size="20px"
 					@click="editTask(item)"
-					title="Edit"
+					:title="$t('Edit')"
 				>
 					mdi-pencil
 				</v-icon>
@@ -219,7 +219,7 @@
 					class="ml-2"
 					size="20px"
 					@click="deleteTasks([item])"
-					title="Delete"
+					:title="$t('Delete')"
 				>
 					mdi-delete
 				</v-icon>
@@ -230,6 +230,7 @@
 </template>
 
 <script lang="ts">
+import { t, localeState } from '../utils/i18n';
 import { defineComponent, useStore, computed, reactive, ref, ComputedRef, Ref } from '@nuxtjs/composition-api';
 import { Task } from 'taskwarrior-lib';
 import _ from 'lodash';
@@ -244,13 +245,14 @@ import SubtaskTree from './SubtaskTree.vue';
 import { TreeTask, childrenOf, descendantsOf, progressOf, rootTasks } from '../utils/hierarchy';
 
 function displayDate(str?: string) {
+	const language = localeState.language;
 	if (!str)
 		return str;
 
 	const date = moment(str);
 	const diff = moment.duration(date.diff(moment()));
 	if (Math.abs(diff.asDays()) < 1)
-		return diff.humanize(true);
+		return diff.locale(language).humanize(true);
 	return date.format('YYYY-MM-DD');
 }
 
@@ -322,20 +324,20 @@ export default defineComponent({
 			recurring: 'mdi-restart'
 		};
 		const headers = computed(() => [
-			{ text: 'Project', value: 'project' },
-			{ text: 'Description', value: 'description' },
-			{ text: 'Priority', value: 'priority' },
-			{ text: 'Scheduled', value: 'scheduled' },
+			{ text: t('Project'), value: 'project' },
+			{ text: t('Description'), value: 'description' },
+			{ text: t('Priority'), value: 'priority' },
+			{ text: t('Scheduled'), value: 'scheduled' },
 			...(status.value === 'recurring'
-				? [{ text: 'Recur', value: 'recur' }]
+				? [{ text: t('Recur'), value: 'recur' }]
 				: []),
 			...(status.value !== 'waiting'
-				? [{ text: 'Due', value: 'due' }]
-				: [{ text: 'Wait', value: 'wait' }]),
-			{ text: 'Until', value: 'until' },
-			{ text: 'Tags', value: 'tags' },
-			{ text: 'Urgency', value: 'urgency', sort: (a: number, b: number) => b - a },
-			{ text: 'Actions', value: 'actions', sortable: false }
+				? [{ text: t('Due'), value: 'due' }]
+				: [{ text: t('Wait'), value: 'wait' }]),
+			{ text: t('Until'), value: 'until' },
+			{ text: t('Tags'), value: 'tags' },
+			{ text: t('Urgency'), value: 'urgency', sort: (a: number, b: number) => b - a },
+			{ text: t('Actions'), value: 'actions', sortable: false }
 		]);
 
 		const filteredHeaders = computed(()=>
@@ -377,7 +379,7 @@ export default defineComponent({
 
 		const showConfirmationDialog = ref(false);
 		const confirmation = reactive({
-			title: 'Confirm',
+			title: t('Confirm'),
 			text: '',
 			handler: () => {}
 		});
@@ -395,12 +397,12 @@ export default defineComponent({
 				await store.dispatch('syncTasks');
 				store.commit('setNotification', {
 					color: 'success',
-					text: 'Successfully synced tasks.'
+					text: t('Tasks synced.')
 				});
 			} catch (error) {
 				store.commit('setNotification', {
 					color: 'error',
-					text: 'Failed to sync tasks.'
+					text: t('Could not sync tasks.')
 				});
 			}
 		};
@@ -439,7 +441,7 @@ export default defineComponent({
 			selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 			store.commit('setNotification', {
 				color: 'success',
-				text: 'Successfully complete the task(s)'
+				text: t('Tasks completed.')
 			});
 		};
 
@@ -447,31 +449,31 @@ export default defineComponent({
 			const selectedIds = new Set(tasks.map(task => task.uuid));
 			const unfinished = new Set(tasks.flatMap(task => descendantsOf(task, store.state.tasks))
 				.filter(task => task.status !== 'completed' && !selectedIds.has(task.uuid)).map(task => task.uuid));
-			confirmation.title = 'Completar tarea';
-			confirmation.text = '¿Marcar como terminada(s)?\n' + tasks.map(task => '• ' + task.description).join('\n') +
-				(unfinished.size ? `\nHay ${unfinished.size} subtarea(s) pendientes. No se completarán automáticamente.` : '');
+			confirmation.title = t('Complete task');
+			confirmation.text = t('Mark as completed?') + '\n' + tasks.map(task => '• ' + task.description).join('\n') +
+				(unfinished.size ? '\n' + t('There are {count} pending subtasks. They will not be completed automatically.', {count: unfinished.size}) : '');
 			confirmation.handler = () => { void applyCompletion(tasks); };
 			showConfirmationDialog.value = true;
 		};
 
 		const deleteTasks = (tasks: Task[]) => {
-			confirmation.title = 'Eliminar tarea';
-			confirmation.text = 'Are you sure to delete the task(s)?';
+			confirmation.title = t('Delete task');
+			confirmation.text = t('Delete the selected tasks?');
 			confirmation.handler = async () => {
 				try { await store.dispatch('deleteTasks', tasks); }
 				catch { return; }
 				selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 				store.commit('setNotification', {
 					color: 'success',
-					text: 'Successfully delete the task(s)'
+					text: t('Tasks deleted.')
 				});
 			};
 			showConfirmationDialog.value = true;
 		};
 
 		const restoreTasks = (tasks: Task[]) => {
-			confirmation.title = 'Restaurar tarea';
-			confirmation.text = 'Are you sure to restore the task(s)?';
+			confirmation.title = t('Restore task');
+			confirmation.text = t('Restore the selected tasks?');
 			confirmation.handler = async () => {
 				try {
 					await store.dispatch('updateTasks', tasks.map(task => {
@@ -487,7 +489,7 @@ export default defineComponent({
 				selected.value = selected.value.filter(task => tasks.findIndex(t => t.uuid === task.uuid) === -1);
 				store.commit('setNotification', {
 					color: 'success',
-					text: 'Successfully restore the task(s)'
+					text: t('Tasks restored.')
 				});
 			};
 			showConfirmationDialog.value = true;
