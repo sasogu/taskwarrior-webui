@@ -1,12 +1,14 @@
 <template>
 	<v-text-field
-		:value="value"
+		:value="displayValue"
 		:label="label"
 		:rules="rules"
 		:required="required"
 		clearable
-		:hint="$t('YYYY-MM-DD or an expression such as tomorrow or +1w')"
-		@input="$emit('input', $event || '')"
+		:hint="$t('Choose a day in the calendar or type a date or expression such as tomorrow.')"
+		@input="updateValue"
+		@focus="beginEdit"
+		@blur="editing = false"
 	>
 		<template v-slot:append>
 			<v-menu
@@ -40,7 +42,8 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from '@nuxtjs/composition-api';
-import moment from 'moment';
+import { localeState } from '../utils/i18n';
+import { formatTaskDate, parseDateInput, readTaskDate } from '../utils/dates';
 
 export default defineComponent({
 	props: {
@@ -51,19 +54,31 @@ export default defineComponent({
 	},
 	setup(props, { emit }) {
 		const open = ref(false);
+		const editing = ref(false);
+		const draft = ref('');
+		const displayValue = computed(() => editing.value ? draft.value
+			: formatTaskDate(props.value, localeState.language));
+		const beginEdit = () => {
+			draft.value = formatTaskDate(props.value, localeState.language);
+			editing.value = true;
+		};
+		const updateValue = (value: string | null) => {
+			draft.value = value || '';
+			if (value === formatTaskDate(props.value, localeState.language)) return;
+			emit('input', parseDateInput(value || '', localeState.language));
+		};
 		const calendarDate = computed(() => {
 			// Read exported UTC timestamps in local time without rewriting the field.
 			// Relative expressions remain untouched until a day is selected.
-			const date = /^\d{8}T\d{6}Z$/.test(props.value)
-				? moment.utc(props.value, 'YYYYMMDDTHHmmss[Z]', true).local()
-				: moment(props.value, moment.ISO_8601, true);
+			const date = readTaskDate(props.value);
 			return date.isValid() ? date.format('YYYY-MM-DD') : null;
 		});
 		const selectDate = (date: string) => {
+			editing.value = false;
 			emit('input', date);
 			open.value = false;
 		};
-		return { open, calendarDate, selectDate };
+		return { open, calendarDate, selectDate, displayValue, updateValue, beginEdit, editing };
 	}
 });
 </script>

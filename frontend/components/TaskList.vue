@@ -231,6 +231,7 @@
 
 <script lang="ts">
 import { t, localeState } from '../utils/i18n';
+import { formatTaskDate } from '../utils/dates';
 import { defineComponent, useStore, computed, reactive, ref, ComputedRef, Ref } from '@nuxtjs/composition-api';
 import { Task } from 'taskwarrior-lib';
 import _ from 'lodash';
@@ -253,7 +254,7 @@ function displayDate(str?: string) {
 	const diff = moment.duration(date.diff(moment()));
 	if (Math.abs(diff.asDays()) < 1)
 		return diff.locale(language).humanize(true);
-	return date.format('YYYY-MM-DD');
+	return formatTaskDate(str, language);
 }
 
 function urgentDate(str?: string) {

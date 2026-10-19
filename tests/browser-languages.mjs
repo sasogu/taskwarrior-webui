@@ -44,7 +44,7 @@ try {
 		assert.ok((await page.locator('.menuable__content__active .v-date-picker-header').textContent()).toLowerCase().includes(
 			new Intl.DateTimeFormat(language, {month: 'long'}).format(new Date(2099, 11, 22)).toLowerCase()));
 		await dialog().locator('input').first().click();
-		assert.equal(await dialog().getByRole('textbox', {name: due, exact: true}).inputValue(), '2099-12-22');
+		assert.equal(await dialog().getByRole('textbox', {name: due, exact: true}).inputValue(), {es: '22 de diciembre de 2099', en: 'December 22, 2099', ca: '22 de desembre de 2099'}[language]);
 		await dialog().getByRole('button', {name: cancel, exact: true}).click();
 		await page.waitForTimeout(300);
 		await page.getByTitle(settings, {exact: true}).click();

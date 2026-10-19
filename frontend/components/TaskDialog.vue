@@ -1,7 +1,7 @@
 <template>
 	<v-dialog
 		v-model="showDialog"
-		max-width="600px"
+		max-width="760px"
 		persistent
 		@keydown.esc="closeDialog"
 	>
@@ -45,7 +45,7 @@
 						:hint="$t('Press tab or enter to add new tags')"
 					/>
 					<v-row>
-						<v-col cols="12" sm="6" class="py-0">
+						<v-col cols="12" md="6" class="py-0">
 							<task-date-field
 								v-model="formData.due"
 								:label="recur ? $t('Due') + '*' : $t('Due')"
@@ -53,13 +53,13 @@
 								:required="recur"
 							/>
 						</v-col>
-						<v-col cols="12" sm="6" class="py-0">
+						<v-col cols="12" md="6" class="py-0">
 							<task-date-field v-model="formData.until" :label="$t('Until')" />
 						</v-col>
-						<v-col cols="12" sm="6" class="py-0">
+						<v-col cols="12" md="6" class="py-0">
 							<task-date-field v-model="formData.scheduled" :label="$t('Scheduled')" />
 						</v-col>
-						<v-col cols="12" sm="6" class="py-0">
+						<v-col cols="12" md="6" class="py-0">
 							<task-date-field v-model="formData.wait" :label="$t('Wait')" />
 						</v-col>
 					</v-row>

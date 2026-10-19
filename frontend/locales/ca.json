@@ -77,7 +77,6 @@
   "Medium": "Mitjana",
   "High": "Alta",
   "Open calendar": "Obri el calendari",
-  "YYYY-MM-DD or an expression such as tomorrow or +1w": "AAAA-MM-DD o una expressió com tomorrow o +1w",
   "Dark": "Fosc",
   "Default theme": "Tema predeterminat",
   "Auto Refresh": "Actualització automàtica",
@@ -100,5 +99,6 @@
   "Una tarea no puede ser su propia subtarea.": "Una tasca no pot ser una subtasca de si mateixa.",
   "No puedes añadir subtareas a una tarea eliminada o recurrente.": "No pots afegir subtasques a una tasca eliminada o recurrent.",
   "Las tareas recurrentes no pueden ser subtareas.": "Les tasques recurrents no poden ser subtasques.",
-  "Esta relación crearía un ciclo entre subtareas.": "Aquesta relació crearia un cicle entre subtasques."
+  "Esta relación crearía un ciclo entre subtareas.": "Aquesta relació crearia un cicle entre subtasques.",
+  "Choose a day in the calendar or type a date or expression such as tomorrow.": "Tria un dia al calendari o escriu una data o una expressió com tomorrow."
 }

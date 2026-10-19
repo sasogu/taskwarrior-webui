@@ -77,7 +77,6 @@
   "Medium": "Medium",
   "High": "High",
   "Open calendar": "Open calendar",
-  "YYYY-MM-DD or an expression such as tomorrow or +1w": "YYYY-MM-DD or an expression such as tomorrow or +1w",
   "Dark": "Dark",
   "Default theme": "Default theme",
   "Auto Refresh": "Auto Refresh",
@@ -100,5 +99,6 @@
   "Una tarea no puede ser su propia subtarea.": "A task cannot be its own subtask.",
   "No puedes añadir subtareas a una tarea eliminada o recurrente.": "You cannot add subtasks to a deleted or recurring task.",
   "Las tareas recurrentes no pueden ser subtareas.": "Recurring tasks cannot be subtasks.",
-  "Esta relación crearía un ciclo entre subtareas.": "This relationship would create a cycle between subtasks."
+  "Esta relación crearía un ciclo entre subtareas.": "This relationship would create a cycle between subtasks.",
+  "Choose a day in the calendar or type a date or expression such as tomorrow.": "Choose a day in the calendar or type a date or expression such as tomorrow."
 }

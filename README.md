@@ -34,6 +34,10 @@ Use the language menu in the top bar to choose English, Español or Català.
 The first visit follows the browser's language preferences; a manual choice is
 saved in that browser and applies immediately. Forms, task actions, confirmations,
 settings, tables, calendars and relative dates use the selected language.
+Dates use readable month names (for example, “22 de octubre de 2026”) and
+show the time when present. Editing accepts numeric dates in the selected
+language, such as `22/10/2026` in Spanish and Catalan or `10/22/2026` in English.
+Displaying or saving an unchanged date preserves its exact timestamp.
 Task descriptions, project names and tags are kept as entered. Taskwarrior date
 expressions such as `tomorrow` and `+1w` retain their original syntax.
 

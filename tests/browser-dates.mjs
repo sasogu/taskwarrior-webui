@@ -25,7 +25,8 @@ try {
   const picker = page.locator('.menuable__content__active .v-date-picker-table');
   await picker.waitFor();
   await picker.getByRole('button', {name: String(12 + index), exact: true}).click();
-  assert.match(await dialog().getByRole('textbox', {name: label, exact: true}).inputValue(), new RegExp('^\\d{4}-\\d{2}-' + (12 + index) + '$'));
+  const date = new Date(); date.setDate(12 + index);
+  assert.equal(await dialog().getByRole('textbox', {name: label, exact: true}).inputValue(), new Intl.DateTimeFormat('es', {day: 'numeric', month: 'long', year: 'numeric'}).format(date));
  }
  // A past until date makes Taskwarrior expire the task automatically.
  await dialog().getByRole('textbox', {name: 'Repetir hasta', exact: true}).fill('2099-12-31');
@@ -62,6 +63,30 @@ try {
  await dialog().getByRole('button', {name: 'Guardar', exact: true}).click();
  assert.equal((await relative).status(), 200, 'Relative dates still save');
  assert.ok((await tasks()).find(t => t.description === 'TEST fecha relativa').due);
+ await dialog().waitFor({state: 'hidden'});
+ const timestamp = '20261022T131507Z';
+ const seeded = await context.request.put('/api/tasks', {data: {tasks: [{description: 'TEST fecha con hora', due: timestamp}]}});
+ assert.equal(seeded.status(), 200);
+ await page.setViewportSize({width: 1280, height: 900});
+ await page.reload();
+ await page.locator('tr').filter({hasText: 'TEST fecha con hora'}).getByTitle('Editar', {exact: true}).click();
+ const dated = dialog().getByRole('textbox', {name: 'Vencimiento', exact: true});
+ assert.equal(await dated.inputValue(), '22 de octubre de 2026 · 15:15:07');
+ const unchanged = page.waitForResponse(r => r.url().endsWith('/api/tasks') && r.request().method() === 'PUT');
+ await dialog().getByRole('button', {name: 'Guardar', exact: true}).click();
+ assert.equal((await unchanged).status(), 200);
+ await dialog().waitFor({state: 'hidden'});
+ assert.equal((await tasks()).find(t => t.description === 'TEST fecha con hora').due, timestamp);
+ await page.waitForTimeout(300);
+ await page.locator('tr').filter({hasText: 'TEST fecha con hora'}).getByTitle('Editar', {exact: true}).click();
+ await dated.fill('22/10/2026 17:45');
+ await dialog().locator('input').first().click();
+ assert.equal(await dated.inputValue(), '22 de octubre de 2026 · 17:45');
+ await page.screenshot({path: '/tmp/taskwarrior-friendly-date.png', fullPage: true});
+ const edited = page.waitForResponse(r => r.url().endsWith('/api/tasks') && r.request().method() === 'PUT');
+ await dialog().getByRole('button', {name: 'Guardar', exact: true}).click();
+ assert.equal((await edited).status(), 200);
+ assert.equal((await tasks()).find(t => t.description === 'TEST fecha con hora').due, '20261022T154500Z');
  assert.deepEqual(errors, []);
- console.log('Calendar: four fields, persistence, existing timestamp, reset, relative dates and mobile PASS');
+ console.log('Dates: four calendars, readable months, exact timestamp preservation, manual local dates/times, reset, expressions and mobile PASS');
 } finally { await browser.close(); }
