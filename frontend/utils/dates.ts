@@ -30,3 +30,21 @@ export function parseDateInput(value: string, language: Language): string {
 	if (!date.isValid()) return value;
 	return date.format('YYYY-MM-DDTHH:mm:ss');
 }
+
+export function setTaskDay(value: string, day: string): string {
+	const date = moment(day, 'YYYY-MM-DD', true);
+	if (!date.isValid()) return value;
+	const previous = readTaskDate(value);
+	if (previous.isValid()) {
+		date.hour(previous.hour()).minute(previous.minute()).second(previous.second());
+	}
+	return date.utc().format('YYYYMMDDTHHmmss[Z]');
+}
+
+export function setTaskTime(value: string, time: string): string {
+	const date = readTaskDate(value);
+	if (!date.isValid() || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return value;
+	const [hour, minute] = time.split(':').map(Number);
+	return date.hour(hour).minute(minute).second(0).millisecond(0)
+		.utc().format('YYYYMMDDTHHmmss[Z]');
+}

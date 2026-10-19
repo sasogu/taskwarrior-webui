@@ -12,13 +12,25 @@ const loaded = new Module(filename, module);
 loaded.filename = filename;
 loaded.paths = Module._nodeModulePaths(path.dirname(filename));
 loaded._compile(compiled.outputText, filename);
-const { readTaskDate, formatTaskDate, parseDateInput } = loaded.exports;
+const { readTaskDate, formatTaskDate, parseDateInput, setTaskDay, setTaskTime } = loaded.exports;
 process.env.TZ = 'Europe/Madrid';
 
 test('exported timestamps display local dates with readable months and exact times', () => {
 	assert.equal(formatTaskDate('20261022T131507Z', 'es'), '22 de octubre de 2026 · 15:15:07');
 	assert.equal(formatTaskDate('20261021T220000Z', 'ca'), "22 d'octubre de 2026");
 	assert.equal(formatTaskDate('2026-10-22', 'en'), 'October 22, 2026');
+});
+
+test('day and time selectors preserve the other part and use the correct UTC offset', () => {
+	assert.equal(setTaskTime('20261022T131507Z', '17:45'), '20261022T154500Z');
+	assert.equal(setTaskTime('20261022T131507Z', '00:30'), '20261021T223000Z');
+	assert.equal(setTaskDay('20261024T131507Z', '2026-10-26'), '20261026T141507Z');
+	assert.equal(setTaskDay('', '2026-10-22'), '20261021T220000Z');
+	for (const invalid of ['24:00', '17:99', '', 'tomorrow']) {
+		assert.equal(setTaskTime('20261022T131507Z', invalid), '20261022T131507Z');
+	}
+	assert.equal(setTaskTime('tomorrow', '17:45'), 'tomorrow');
+	assert.equal(setTaskDay('20261022T131507Z', 'invalid'), '20261022T131507Z');
 });
 
 test('numeric and readable dates parse according to language; expressions stay intact', () => {

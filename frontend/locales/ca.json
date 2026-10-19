@@ -100,5 +100,7 @@
   "No puedes añadir subtareas a una tarea eliminada o recurrente.": "No pots afegir subtasques a una tasca eliminada o recurrent.",
   "Las tareas recurrentes no pueden ser subtareas.": "Les tasques recurrents no poden ser subtasques.",
   "Esta relación crearía un ciclo entre subtareas.": "Aquesta relació crearia un cicle entre subtasques.",
-  "Choose a day in the calendar or type a date or expression such as tomorrow.": "Tria un dia al calendari o escriu una data o una expressió com tomorrow."
+  "Choose a day in the calendar or type a date or expression such as tomorrow.": "Tria un dia al calendari o escriu una data o una expressió com tomorrow.",
+  "Time": "Hora",
+  "Choose a date first": "Tria primer una data"
 }

@@ -14,7 +14,8 @@ Responsive Web UI for Taskwarrior based on Vue.js and Koa.js.
 
 Date fields include a localized calendar picker (Monday first) for due, until,
 scheduled and wait, alongside editable Taskwarrior date expressions. Selecting a
-day sets a date at local midnight; opening the calendar preserves existing times.
+day preserves the existing time, defaulting to midnight for a new date. Each date
+has a separate Time field with a 24-hour clock picker and Save/Cancel buttons.
 
 Local fork: [nested subtasks](./docs/SUBTASKS.md), with a parent selector,
 foldable trees and completion progress, stored in Taskwarrior 2.6.2.

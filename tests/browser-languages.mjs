@@ -45,6 +45,9 @@ try {
 			new Intl.DateTimeFormat(language, {month: 'long'}).format(new Date(2099, 11, 22)).toLowerCase()));
 		await dialog().locator('input').first().click();
 		assert.equal(await dialog().getByRole('textbox', {name: due, exact: true}).inputValue(), {es: '22 de diciembre de 2099', en: 'December 22, 2099', ca: '22 de desembre de 2099'}[language]);
+		await dialog().getByLabel((language === 'en' ? 'Time' : 'Hora') + ': ' + due, {exact: true}).click();
+		await page.locator('.menuable__content__active .v-time-picker-clock').waitFor();
+		await page.locator('.menuable__content__active').getByRole('button', {name: cancel, exact: true}).click();
 		await dialog().getByRole('button', {name: cancel, exact: true}).click();
 		await page.waitForTimeout(300);
 		await page.getByTitle(settings, {exact: true}).click();

@@ -1,4 +1,5 @@
 <template>
+	<div class="task-date-field">
 	<v-text-field
 		:value="displayValue"
 		:label="label"
@@ -38,12 +39,35 @@
 			</v-menu>
 		</template>
 	</v-text-field>
+	<v-menu v-model="timeOpen" :close-on-content-click="false" offset-y min-width="0" :disabled="!calendarDate">
+		<template v-slot:activator="{ on, attrs }">
+			<v-text-field
+				:value="timeValue"
+				:label="$t('Time')"
+				:aria-label="$t('Time') + ': ' + label"
+				:disabled="!calendarDate"
+				:hint="!calendarDate ? $t('Choose a date first') : ''"
+				persistent-hint
+				dense readonly
+				append-icon="mdi-clock-outline"
+				class="task-time-field mb-3"
+				v-bind="attrs" v-on="on"
+				@click:append="timeOpen = true"
+			/>
+		</template>
+		<v-time-picker v-if="timeOpen" v-model="draftTime" format="24hr" width="280" scrollable>
+			<v-spacer />
+			<v-btn text @click="timeOpen = false">{{ $t('Cancel') }}</v-btn>
+			<v-btn text color="primary" @click="applyTime">{{ $t('Save') }}</v-btn>
+		</v-time-picker>
+	</v-menu>
+	</div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from '@nuxtjs/composition-api';
+import { computed, defineComponent, ref, watch } from '@nuxtjs/composition-api';
 import { localeState } from '../utils/i18n';
-import { formatTaskDate, parseDateInput, readTaskDate } from '../utils/dates';
+import { formatTaskDate, parseDateInput, readTaskDate, setTaskDay, setTaskTime } from '../utils/dates';
 
 export default defineComponent({
 	props: {
@@ -54,6 +78,8 @@ export default defineComponent({
 	},
 	setup(props, { emit }) {
 		const open = ref(false);
+		const timeOpen = ref(false);
+		const draftTime = ref('00:00');
 		const editing = ref(false);
 		const draft = ref('');
 		const displayValue = computed(() => editing.value ? draft.value
@@ -73,12 +99,29 @@ export default defineComponent({
 			const date = readTaskDate(props.value);
 			return date.isValid() ? date.format('YYYY-MM-DD') : null;
 		});
+		const timeValue = computed(() => {
+			const date = readTaskDate(props.value);
+			return date.isValid() ? date.format('HH:mm') : '';
+		});
+		watch(timeOpen, value => {
+			if (value) draftTime.value = timeValue.value || '00:00';
+		});
+		const applyTime = () => {
+			editing.value = false;
+			emit('input', setTaskTime(props.value, draftTime.value));
+			timeOpen.value = false;
+		};
 		const selectDate = (date: string) => {
 			editing.value = false;
-			emit('input', date);
+			emit('input', setTaskDay(props.value, date));
 			open.value = false;
 		};
-		return { open, calendarDate, selectDate, displayValue, updateValue, beginEdit, editing };
+		return { open, calendarDate, selectDate, displayValue, updateValue, beginEdit, editing,
+			timeOpen, draftTime, timeValue, applyTime };
 	}
 });
 </script>
+
+<style scoped>
+.task-time-field { max-width: 180px; }
+</style>
