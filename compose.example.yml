@@ -1,0 +1,23 @@
+services:
+  webui:
+    build: .
+    image: taskwarrior-webui-local:latest
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ALLOWED_LOGINS: ${ALLOWED_LOGINS:?Set your Tailscale login}
+    volumes:
+      - ${TASKRC_HOST:?Set the Taskwarrior config path}:/config/taskrc:ro
+      - ${TASKDATA_HOST:?Set the Taskwarrior 2 data path}:/data
+    ports:
+      - "127.0.0.1:8096:8080"
+    mem_limit: 256m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "3"}

@@ -1,3 +1,11 @@
 .task
 .taskrc
 dist
+
+# Local deployment configuration and task data
+.env*
+!.env.example
+/taskrc
+/data/
+/backups/
+*.data

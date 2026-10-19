@@ -1,0 +1,26 @@
+name: Validate fork
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build test image
+        run: docker build --target build -t taskwarrior-webui-tests .
+      - name: Unit tests
+        run: |
+          docker run --rm -v "$PWD/tests:/src/tests:ro" -w /src taskwarrior-webui-tests \
+            node --test tests/hierarchy.test.cjs tests/i18n.test.cjs tests/dates.test.cjs
+      - name: Build runtime image
+        run: docker build -t taskwarrior-webui-ci .
+      - name: Check Taskwarrior version
+        run: test "$(docker run --rm --entrypoint task taskwarrior-webui-ci --version)" = "2.6.2"

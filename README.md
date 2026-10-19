@@ -1,163 +1,99 @@
-# Taskwarrior-webui
+# Taskwarrior WebUI — independent Taskwarrior 2 fork
 
-[![Docker Image Size](https://badgen.net/docker/size/dcsunset/taskwarrior-webui)](https://hub.docker.com/r/dcsunset/taskwarrior-webui)
+An independent fork of [DCsunset/taskwarrior-webui](https://github.com/DCsunset/taskwarrior-webui),
+based on its Taskwarrior 2 code at `6566cbe`. The original authors retain their
+copyright; this fork keeps the [GPL-3.0 license](LICENSE).
 
-Responsive Web UI for Taskwarrior based on Vue.js and Koa.js.
-
-## Screenshots
-
-![Screenshot 1](./screenshots/Screenshot1.png)
-
-![Screenshot 2](./screenshots/Screenshot2.png)
+This version uses **Taskwarrior 2.6.2** as its single source of truth. It operates
+directly on a Taskwarrior 2 data directory through the `task` executable. Its
+storage is incompatible with Taskwarrior 3.
 
 ## Features
 
-Date fields include a localized calendar picker (Monday first) for due, until,
-scheduled and wait, alongside editable Taskwarrior date expressions. Selecting a
-day preserves the existing time, defaulting to midnight for a new date. Each date
-has a separate Time field with a 24-hour clock picker and Save/Cancel buttons.
+- Nested subtasks with foldable trees and completion progress, stored in the
+  `webparent` UDA. See [SUBTASKS.md](docs/SUBTASKS.md).
+- English, Spanish and Catalan, with a language selector and browser preference
+  detection. A manual choice is remembered in that browser.
+- Readable dates, calendar selectors and separate 24-hour time pickers.
+  Changing the day preserves the existing time; opening a selector changes no data.
+- Editable annotations and confirmed deletion. Changes apply when the task is
+  saved; Cancel and Reset discard drafts. Original annotation timestamps remain.
+- Projects, tags, priorities, recurrence, scheduling, waiting, batch actions and
+  responsive layouts with light/dark themes.
+- Conflict detection: a stale task update is rejected with HTTP 409.
+- Tailscale identity authentication and a non-root Docker image.
+- Taskwarrior commands execute with argument arrays rather than a shell.
 
-Local fork: [nested subtasks](./docs/SUBTASKS.md), with a parent selector,
-foldable trees and completion progress, stored in Taskwarrior 2.6.2.
+Descriptions, project names and tags stay as entered. Date expressions such as
+`tomorrow` and `+1w` retain Taskwarrior's syntax. Numeric dates follow the selected
+language: `22/10/2026` in Spanish/Catalan and `10/22/2026` in English.
 
-* Responsive layouts
-* Material Design UI
-* PWA support
-* Easy to deploy (using Docker)
-* Support for multiple types of tasks
-* Support for light and dark themes
-* Sync with a taskserver
+## Run with Docker and Tailscale
 
+Requirements: Docker Compose, Tailscale with Serve available, and files writable
+by container UID/GID `1000:1000`.
 
-Annotations can be edited or deleted from the task form. Deleting asks for
-confirmation with the annotation text. Annotation changes are applied when the
-task is saved; Cancel and Reset discard drafts. Editing preserves the original
-annotation timestamp, and stale task updates retain the existing conflict check.
+1. Copy `.env.example` to `.env`. Set `ALLOWED_LOGINS` to your Tailscale login and
+   set `TASKRC_HOST` and `TASKDATA_HOST` to your Taskwarrior 2 configuration and
+   data directory. Back up existing task data before connecting it.
+2. Build and run:
 
-## Languages
+   ```sh
+   docker compose -f compose.example.yml up -d --build
+   ```
 
-Use the language menu in the top bar to choose English, Español or Català.
-The first visit follows the browser's language preferences; a manual choice is
-saved in that browser and applies immediately. Forms, task actions, confirmations,
-settings, tables, calendars and relative dates use the selected language.
-Dates use readable month names (for example, “22 de octubre de 2026”) and
-show the time when present. Editing accepts numeric dates in the selected
-language, such as `22/10/2026` in Spanish and Catalan or `10/22/2026` in English.
-Displaying or saving an unchanged date preserves its exact timestamp.
-Task descriptions, project names and tags are kept as entered. Taskwarrior date
-expressions such as `tomorrow` and `+1w` retain their original syntax.
+3. Publish the loopback service inside your tailnet:
 
-## Deployment
+   ```sh
+   tailscale serve --bg --https=8095 http://127.0.0.1:8096
+   ```
 
-### Using docker (recommended)
+4. Open `https://<your-node>.<your-tailnet>.ts.net:8095` with Tailscale connected.
+   Reload with Ctrl+Shift+R if an installed PWA retains older resources.
 
-First pull the docker image:
+Tailscale Serve supplies `Tailscale-User-Login`; the backend only accepts logins
+listed in `ALLOWED_LOGINS`. Keep the backend bound to loopback behind that trusted
+proxy. A missing/unauthorized identity receives HTTP 403. Authentication is
+independent of external identity providers.
 
-```
-docker pull dcsunset/taskwarrior-webui
-```
+For a new isolated store, create a `data` directory and a `taskrc` file containing
+`data.location=/data`, then use their paths in `.env`. Existing `.taskrc` settings
+and hooks may require additional files or mounts; check them for your deployment.
 
-Then run it with the command:
+## Tests
 
-```
-docker run -d -p 8080:80 --name taskwarrior-webui \
-	-v $HOME/.taskrc:/.taskrc -v $HOME/.task:/.task \
-	dcsunset/taskwarrior-webui
-```
-Enter `http://127.0.0.1:8080` (replace `127.0.0.1` with your ip address if running on a remote server).
-
-If you want to use already existing taskwarrior data, use `:z` or `:Z` labels. See
-[here](https://stackoverflow.com/questions/35218194/what-is-z-flag-in-docker-containers-volumes-from-option/35222815#35222815).
-```
-# e.g.
-docker run -d -p 8080:80 --name taskwarrior-webui \
-	-v $HOME/.taskrc:/.taskrc:z -v $HOME/.task:/.task:z \
-	dcsunset/taskwarrior-webui
-```
-
-If your configuration file contains absolute path to your home directory like `/home/xxx/ca.cert.pem`,
-you may want to mount files to the same paths in the container using the following command:
+Build the development stage and run the unit tests:
 
 ```sh
-docker run -d -p 8080:80 --name taskwarrior-webui \
-	-e TAKSRC=$HOME/.taskrc -e TASKDATA=$HOME/.task \
-	-v $HOME/.taskrc:$HOME/.taskrc -v $HOME/.task:$HOME/.task \
-	dcsunset/taskwarrior-webui
+docker build --target build -t taskwarrior-webui-tests .
+docker run --rm -v "$PWD/tests:/src/tests:ro" -w /src taskwarrior-webui-tests \
+  node --test tests/hierarchy.test.cjs tests/i18n.test.cjs tests/dates.test.cjs
 ```
 
-## Configurations
+The `tests/browser-*.mjs` scripts use Playwright/Chromium against a disposable API
+container with synthetic tasks. `TASKWEB_TEST_URL` defaults to
+`http://127.0.0.1:18097`; `TASKWEB_PLAYWRIGHT` can specify the installed Playwright
+module. The test identity is `subtasks@example.invalid`. `browser-dates.mjs`
+requires an empty store. `tests/api-subtasks.py` also requires an empty disposable
+store. These scripts create and modify test tasks; use isolated data directories.
 
-The following environment variables may be set:
- * `TASKRC` - the location of the `.taskrc` file, `/.taskrc` by default when run in _production_ mode
- * `TASKDATA` - the location of the `.task` directory, `/.task` by default when run in _production_ mode
+## Roadmap
 
-Remember to mount your files to **the corresponding locations** when you set `TASKRC` or `TASKDATA` to a different value.
+See [ROADMAP.md](ROADMAP.md). Annotation editing/deletion is complete. The remaining
+phases are deferred: start/stop, search/filters, dependencies, contexts/reports,
+and safe undo of web actions. No further implementation is scheduled automatically.
 
-### Manually deploy
+The UI still contains inherited taskserver sync settings; `/api/sync` is disabled
+in this version. Refresh reads the shared local Taskwarrior store.
 
-First build the frontend:
+## Project lineage
 
-```
-cd frontend
-npm install
-npm run build
-npm run export
-```
-
-Then build and start the backend:
-
-```
-cd backend
-npm install
-npm run build
-npm start
-```
-
-Then install nginx or other web servers
-to server frontend and proxy requests to backend
-(you can refer to `nginx/nginx.conf`).
-
-## Development
-
-First start the server at backend:
-
-```
-cd backend
-npm install
-npm run dev
-```
-
-Then start the dev server at frontend:
-
-```
-cd frontend
-npm install
-npm run dev
-```
-
-Then the frontend will listen at port 8080.
-
-## Contributing
-
-Contributions are very welcome!
-Please create or comment on an issue to discuss your ideas first before working on any PR.
-
-I've been very busy recently and may not be able to handle every issue timely.
-So I'm also looking for maintainers who are interested in this project.
-Feel free to open an issue if you have any interest.
-
-## FAQ
-
-### Sync with a taskserver
-
-This Web UI supports auto sync with a taskd server
-by calling the `task sync` command periodically.
-In order to use this function,
-first you need to follow the [instructions](https://taskwarrior.org/docs/taskserver/setup.html)
-to configure both the taskserver and client manually until the `task sync` can be executed successfully.
-Then remember to map the client configurations (`.taskrc` and `.task`) into the container.
-
+The local project originally imported a snapshot of upstream `6566cbe`, then
+recorded its changes as separate commits. Publication connects that local history
+to the original upstream commit, preserving both histories and the existing patch
+commits. This fork is maintained independently; upstream pull requests are not
+part of the current plan.
 
 ## License
 
-GPL-3.0 License
+[GNU GPL version 3](LICENSE).
