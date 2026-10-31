@@ -3,16 +3,19 @@
 		v-model="showDialog"
 		max-width="760px"
 		persistent
+		scrollable
+		:fullscreen="$vuetify.breakpoint.xsOnly"
 		@keydown.esc="closeDialog"
 	>
 		<v-card>
 			<v-card-title>
 				{{ $t(task ? 'Edit Task' : parentTask ? 'New subtask' : 'New Task') }}
 			</v-card-title>
-			<v-card-text>
+			<v-divider />
+			<v-card-text class="pt-2">
 				<v-form ref="formRef" lazy-validation>
 					<v-text-field
-						autofocus
+						:autofocus="!task"
 						v-model="formData.description"
 						:label="$t('Description') + '*'"
 						:rules="requiredRules"
@@ -91,7 +94,8 @@
 				</v-form>
 			</v-card-text>
 
-			<v-card-actions>
+			<v-divider />
+			<v-card-actions class="task-dialog-actions">
 				<v-spacer />
 				<v-btn text @click="closeDialog">
 					{{ $t('Cancel') }}

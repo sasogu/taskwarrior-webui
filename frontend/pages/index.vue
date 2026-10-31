@@ -12,7 +12,7 @@
 					:items="projects"
 					:label="$t('Project')"
 					v-model="project"
-					style="max-width: 120px"
+					style="max-width: 220px; min-width: 120px"
 					hide-details
 				/>
 				<div class="ml-6 d-flex align-center">

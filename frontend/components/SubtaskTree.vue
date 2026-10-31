@@ -69,4 +69,11 @@ export default defineComponent({
 	.subtask-row { flex-wrap: wrap; }
 	.subtask-actions { margin-left: auto; }
 }
+/* Touch screens (iPad, phones): 40px tap targets and wrapped actions */
+@media (pointer: coarse), (max-width: 1263px) {
+	.subtask-row { flex-wrap: wrap; }
+	.subtask-actions { margin-left: auto; }
+	.subtask-actions .v-btn.v-btn--icon { width: 40px; height: 40px; }
+	.subtask-actions .v-btn .v-icon { font-size: 22px !important; }
+}
 </style>

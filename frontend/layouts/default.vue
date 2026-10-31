@@ -25,7 +25,7 @@
 			<v-icon class="mr-2" color="blue">
 				mdi-sticker-check-outline
 			</v-icon>
-			<v-toolbar-title>
+			<v-toolbar-title class="d-none d-sm-flex">
 				Taskwarrior WebUI
 			</v-toolbar-title>
 			<v-spacer />
@@ -43,17 +43,12 @@
 					</v-list-item>
 				</v-list>
 			</v-menu>
-			<v-icon class="mr-4" size="28px" @click="dark = !dark" :title="$t('Theme')">
-				{{ dark ? 'mdi-brightness-4' : 'mdi-brightness-7' }}
-			</v-icon>
-			<v-icon
-				class="mr-2"
-				size="28px"
-				:title="$t('Settings')"
-				@click="settingsDialog = true"
-			>
-				mdi-cog
-			</v-icon>
+			<v-btn icon :title="$t('Theme')" :aria-label="$t('Theme')" @click="dark = !dark">
+				<v-icon size="26px">{{ dark ? 'mdi-brightness-4' : 'mdi-brightness-7' }}</v-icon>
+			</v-btn>
+			<v-btn icon :title="$t('Settings')" :aria-label="$t('Settings')" @click="settingsDialog = true">
+				<v-icon size="26px">mdi-cog</v-icon>
+			</v-btn>
 		</v-app-bar>
 
 		<v-main>

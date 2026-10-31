@@ -76,6 +76,9 @@ container with synthetic tasks. `TASKWEB_TEST_URL` defaults to
 module. The test identity is `subtasks@example.invalid`. `browser-dates.mjs`
 requires an empty store. `tests/api-subtasks.py` also requires an empty disposable
 store. These scripts create and modify test tasks; use isolated data directories.
+`browser-responsive.mjs` checks the touch/tablet card layout (iPad portrait and
+landscape, phone, desktop table); set `TASKWEB_ENGINE=webkit` to run it in WebKit.
+Browser tests expect a fresh synthetic store: accumulated data can paginate the table.
 
 ## Roadmap
 

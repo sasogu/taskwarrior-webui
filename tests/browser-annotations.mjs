@@ -25,7 +25,7 @@ const confirmation = () => page.locator('.v-dialog--active').filter({hasText: 'Â
 const row = text => dialog().locator('.annotation-row').filter({hasText: text});
 const saved = async () => (await tasks()).find(task => task.description === name);
 async function open(edit = 'Editar') {
-	await page.locator('tr').filter({hasText: name}).getByTitle(edit, {exact: true}).click();
+	await page.locator('tr, .task-card').filter({hasText: name}).getByTitle(edit, {exact: true}).click();
 }
 async function saveTask(status = 200) {
 	const response = page.waitForResponse(r => r.url().endsWith('/api/tasks') && r.request().method() === 'PUT');

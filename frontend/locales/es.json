@@ -109,5 +109,13 @@
   "Cancel editing": "Cancelar edición",
   "Delete this annotation?": "¿Eliminar esta anotación?",
   "Annotation changes are applied when you save the task.": "Los cambios en las anotaciones se aplican al guardar la tarea.",
-  "Save or cancel the annotation edit before saving the task.": "Guarda o cancela la edición de la anotación antes de guardar la tarea."
+  "Save or cancel the annotation edit before saving the task.": "Guarda o cancela la edición de la anotación antes de guardar la tarea.",
+  "Sort by": "Ordenar por",
+  "Select all": "Seleccionar todas",
+  "Clear selection": "Quitar selección",
+  "{count} selected": "{count} seleccionadas",
+  "No tasks": "No hay tareas",
+  "Card view": "Vista de tarjetas",
+  "Table view": "Vista de tabla",
+  "Select task": "Seleccionar tarea"
 }

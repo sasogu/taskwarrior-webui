@@ -22,7 +22,9 @@ export default {
 		title: 'Taskwarrior Webui',
 		meta: [
 			{ charset: 'utf-8' },
-			{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
+			{ name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+			{ name: 'apple-mobile-web-app-capable', content: 'yes' },
+			{ name: 'mobile-web-app-capable', content: 'yes' },
 			{ hid: 'description', name: 'description', content: process.env.npm_package_description || '' }
 		],
 		link: [

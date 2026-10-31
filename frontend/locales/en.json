@@ -109,5 +109,13 @@
   "Cancel editing": "Cancel editing",
   "Delete this annotation?": "Delete this annotation?",
   "Annotation changes are applied when you save the task.": "Annotation changes are applied when you save the task.",
-  "Save or cancel the annotation edit before saving the task.": "Save or cancel the annotation edit before saving the task."
+  "Save or cancel the annotation edit before saving the task.": "Save or cancel the annotation edit before saving the task.",
+  "Sort by": "Sort by",
+  "Select all": "Select all",
+  "Clear selection": "Clear selection",
+  "{count} selected": "{count} selected",
+  "No tasks": "No tasks",
+  "Card view": "Card view",
+  "Table view": "Table view",
+  "Select task": "Select task"
 }

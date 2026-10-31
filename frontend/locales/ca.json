@@ -109,5 +109,13 @@
   "Cancel editing": "Cancel·la l’edició",
   "Delete this annotation?": "Vols eliminar aquesta anotació?",
   "Annotation changes are applied when you save the task.": "Els canvis en les anotacions s’apliquen en desar la tasca.",
-  "Save or cancel the annotation edit before saving the task.": "Desa o cancel·la l’edició de l’anotació abans de desar la tasca."
+  "Save or cancel the annotation edit before saving the task.": "Desa o cancel·la l’edició de l’anotació abans de desar la tasca.",
+  "Sort by": "Ordena per",
+  "Select all": "Selecciona-les totes",
+  "Clear selection": "Lleva la selecció",
+  "{count} selected": "{count} seleccionades",
+  "No tasks": "No hi ha tasques",
+  "Card view": "Vista de targetes",
+  "Table view": "Vista de taula",
+  "Select task": "Selecciona la tasca"
 }
