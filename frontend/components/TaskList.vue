@@ -538,6 +538,7 @@ export default defineComponent({
 
 		const shown = (column: string) => !store.state.hiddenColumns.includes(column);
 		const priorityNames: { [p: string]: string } = { L: 'Low', M: 'Medium', H: 'High' };
+		// Sort order is remembered per browser.
 		const sortKey = ref('urgency');
 		const sortOptions = computed(() => [
 			{ value: 'urgency', text: t('Urgency') },
@@ -546,6 +547,15 @@ export default defineComponent({
 			{ value: 'project', text: t('Project') },
 			{ value: 'description', text: t('Description') }
 		]);
+		onMounted(() => {
+			try {
+				const saved = localStorage.getItem('taskweb-sort');
+				if (saved && sortOptions.value.some(option => option.value === saved)) sortKey.value = saved;
+			} catch { /* storage may be unavailable */ }
+		});
+		watch(sortKey, value => {
+			try { localStorage.setItem('taskweb-sort', value); } catch { /* ignore */ }
+		});
 		const sortedItems = computed(() => {
 			const items = [...rootItems.value] as TreeTask[];
 			const key = sortKey.value;

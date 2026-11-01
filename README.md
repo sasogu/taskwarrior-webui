@@ -82,6 +82,7 @@ landscape, phone, desktop table); set `TASKWEB_ENGINE=webkit` to run it in WebKi
 `browser-theme.mjs` checks that the dark theme choice persists after reloading,
 both from the toolbar button and from the settings dialog. `browser-mode.mjs`
 checks that the Tasks/Projects display mode is remembered across reloads.
+`browser-sort.mjs` checks that the card-view sort order is remembered across reloads.
 `browser-recur.mjs` creates a recurring task with a preset and edits it to a custom
 period, checking the stored `recur` value.
 Browser tests expect a fresh synthetic store: accumulated data can paginate the table.
