@@ -81,6 +81,8 @@ export default defineComponent({
 			get: () => context.$vuetify.theme.dark,
 			set: val => {
 				context.$vuetify.theme.dark = val;
+				if (store.state.settings.dark !== val)
+					store.dispatch('updateSettings', { ...store.state.settings, dark: val });
 			}
 		});
 

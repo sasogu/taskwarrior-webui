@@ -121,6 +121,11 @@ export default defineComponent({
 			reset();
 		};
 
+		watch(() => props.value, val => {
+			if (val)
+				reset();
+		});
+
 		const save = () => {
 			const valid = (formRef as any).value.validate();
 			if (valid) {
