@@ -68,14 +68,24 @@
 					</v-row>
 					<v-row class="px-3">
 						<v-checkbox v-model="recur" class="mr-3" :label="$t('Recur')" :disabled="!!formData.webparent" />
-						<v-text-field
+						<v-select
+							v-model="recurChoice"
+							:items="recurItems"
 							:label="$t('Period') + '*'"
-							v-model="formData.recur"
 							:rules="recur ? requiredRules : []"
 							:required="recur"
 							:disabled="!recur"
+							style="max-width: 260px"
 						/>
 					</v-row>
+					<v-text-field
+						v-if="recur && recurChoice === 'custom'"
+						:label="$t('Period') + '*'"
+						v-model="formData.recur"
+						:rules="requiredRules"
+						:hint="$t('Taskwarrior recurrence syntax (for example 2w).')"
+						persistent-hint
+					/>
 					<v-radio-group v-model="formData.priority" row hide-details class="align-center">
 						<template v-slot:prepend>
 							<span class="mr-3 subtitle-1">
@@ -154,6 +164,24 @@ export default defineComponent({
 		const annotationEditing = ref(false);
 		const annotationRevision = ref(0);
 
+		const recurPresets = ['daily', 'weekdays', 'weekly', 'biweekly', 'monthly',
+			'bimonthly', 'quarterly', 'semiannual', 'annual', 'biyearly'];
+		const recurChoice = ref('');
+		const recurItems = computed(() => [
+			...recurPresets.map(value => ({
+				value,
+				text: t(value.charAt(0).toUpperCase() + value.slice(1))
+			})),
+			{ value: 'custom', text: t('Custom…') }
+		]);
+		const syncRecurChoice = () => {
+			const value = formData.value.recur || '';
+			const normalized = value.toLowerCase();
+			recurChoice.value = recurPresets.includes(normalized)
+				? normalized
+				: (value ? 'custom' : '');
+		};
+
 		const recur = ref(Boolean(props.task?.recur));
 		const formData = ref({
 			description: '',
@@ -168,6 +196,20 @@ export default defineComponent({
 			priority: 'N',
 			recur: '',
 			...cloneDeep(props.task)
+		});
+
+		syncRecurChoice();
+
+		watch(recurChoice, value => {
+			if (value && value !== 'custom')
+				formData.value.recur = value;
+		});
+
+		watch(recur, value => {
+			if (value && !formData.value.recur) {
+				recurChoice.value = 'weekly';
+				formData.value.recur = 'weekly';
+			}
 		});
 
 		const reset = () => {
@@ -186,6 +228,7 @@ export default defineComponent({
 				...cloneDeep(props.task)
 			};
 			recur.value = Boolean(props.task?.recur);
+			syncRecurChoice();
 			if (formRef.value) {
 				(formRef.value as any).resetValidation();
 			}
@@ -249,6 +292,8 @@ export default defineComponent({
 			parentOptions,
 			priorities,
 			recur,
+			recurChoice,
+			recurItems,
 			formData,
 			annotationEditing,
 			annotationRevision,

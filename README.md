@@ -18,8 +18,9 @@ storage is incompatible with Taskwarrior 3.
   Changing the day preserves the existing time; opening a selector changes no data.
 - Editable annotations and confirmed deletion. Changes apply when the task is
   saved; Cancel and Reset discard drafts. Original annotation timestamps remain.
-- Projects, tags, priorities, recurrence, scheduling, waiting, batch actions and
-  responsive layouts with light/dark themes.
+- Projects, tags, priorities, scheduling, waiting, batch actions and responsive
+  layouts with light/dark themes. Recurrence offers common presets (daily,
+  weekdays, weekly, monthly…) plus a custom Taskwarrior syntax field.
 - Conflict detection: a stale task update is rejected with HTTP 409.
 - Tailscale identity authentication and a non-root Docker image.
 - Taskwarrior commands execute with argument arrays rather than a shell.
@@ -81,6 +82,8 @@ landscape, phone, desktop table); set `TASKWEB_ENGINE=webkit` to run it in WebKi
 `browser-theme.mjs` checks that the dark theme choice persists after reloading,
 both from the toolbar button and from the settings dialog. `browser-mode.mjs`
 checks that the Tasks/Projects display mode is remembered across reloads.
+`browser-recur.mjs` creates a recurring task with a preset and edits it to a custom
+period, checking the stored `recur` value.
 Browser tests expect a fresh synthetic store: accumulated data can paginate the table.
 
 ## Roadmap
