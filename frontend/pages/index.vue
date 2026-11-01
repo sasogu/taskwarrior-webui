@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch, ComputedRef, useStore, useContext } from '@nuxtjs/composition-api';
+import { defineComponent, ref, computed, watch, onMounted, ComputedRef, useStore, useContext } from '@nuxtjs/composition-api';
 import TaskList from '../components/TaskList.vue';
 import { Task } from 'taskwarrior-lib';
 import { accessorType  } from "../store";
@@ -89,8 +89,18 @@ export default defineComponent({
 			context.$vuetify.theme.dark = store.state.settings.dark;
 		});
 
-		const mode = ref('Tasks');
+		// Display mode is remembered per browser.
 		const allModes = ['Tasks', 'Projects'];
+		const mode = ref('Tasks');
+		onMounted(() => {
+			try {
+				const saved = localStorage.getItem('taskweb-mode');
+				if (saved === 'Tasks' || saved === 'Projects') mode.value = saved;
+			} catch { /* storage may be unavailable */ }
+		});
+		watch(mode, value => {
+			try { localStorage.setItem('taskweb-mode', value); } catch { /* ignore */ }
+		});
 
 		const project = ref('');
 		const projects: ComputedRef<string[]> = computed(() => store.getters.projects);

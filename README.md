@@ -79,7 +79,8 @@ store. These scripts create and modify test tasks; use isolated data directories
 `browser-responsive.mjs` checks the touch/tablet card layout (iPad portrait and
 landscape, phone, desktop table); set `TASKWEB_ENGINE=webkit` to run it in WebKit.
 `browser-theme.mjs` checks that the dark theme choice persists after reloading,
-both from the toolbar button and from the settings dialog.
+both from the toolbar button and from the settings dialog. `browser-mode.mjs`
+checks that the Tasks/Projects display mode is remembered across reloads.
 Browser tests expect a fresh synthetic store: accumulated data can paginate the table.
 
 ## Roadmap
