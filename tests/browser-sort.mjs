@@ -13,12 +13,19 @@ page.on('pageerror', error => errors.push(error.message));
 const response = await context.request.get('/api/tasks');
 assert.equal(response.status(), 200, 'Disposable identity required');
 assert.ok((await response.json()).every(task => task.description.startsWith('TEST ')), 'ABORT: synthetic tasks required');
+assert.equal((await response.json()).length, 0, 'ABORT: empty synthetic store required');
 
 const sortSelect = () => page.locator('.task-sort');
 const sortValue = () => sortSelect().locator('input[type="hidden"]').inputValue();
 const savedSort = () => page.evaluate(() => localStorage.getItem('taskweb-sort'));
 
 try {
+	const created = await context.request.put('/api/tasks', {data: {tasks: [
+		{description: 'TEST prioridad baja', priority: 'L'},
+		{description: 'TEST prioridad alta', priority: 'H'},
+		{description: 'TEST prioridad media', priority: 'M'}
+	]}});
+	assert.equal(created.status(), 200, 'Synthetic tasks created');
 	await page.goto('/');
 	await page.getByTitle('Vista de tarjetas', {exact: true}).click();
 	await sortSelect().waitFor();
@@ -34,6 +41,20 @@ try {
 	await page.waitForFunction(() => document.querySelector('.task-sort input[type="hidden"]')?.value === 'due');
 	assert.equal(await sortValue(), 'due', 'Sort choice survives reload');
 	assert.equal(await sortSelect().locator('.v-select__selection').textContent(), 'Vencimiento');
+
+	await sortSelect().click();
+	await page.locator('.menuable__content__active').getByText('Prioridad', {exact: true}).click();
+	await page.waitForFunction(() => localStorage.getItem('taskweb-sort') === 'priority');
+	assert.deepEqual(await page.locator('.task-card-title').allTextContents(), [
+		'TEST prioridad alta', 'TEST prioridad media', 'TEST prioridad baja'
+	], 'Cards sort high, medium, low');
+
+	await page.getByTitle('Vista de tabla', {exact: true}).click();
+	await page.getByRole('columnheader', {name: 'Prioridad'}).click();
+	const rows = await page.locator('tbody tr').allTextContents();
+	assert.deepEqual(rows.map(row => row.match(/TEST prioridad (alta|media|baja)/)?.[0]).filter(Boolean), [
+		'TEST prioridad alta', 'TEST prioridad media', 'TEST prioridad baja'
+	], 'Table sorts high, medium, low');
 
 	assert.deepEqual(errors, [], 'No JavaScript errors');
 	console.log('sort persistence: PASS');

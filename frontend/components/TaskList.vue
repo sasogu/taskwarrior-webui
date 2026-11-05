@@ -422,6 +422,10 @@ function futureDate(str?: string) {
 	return date.isAfter(moment());
 }
 
+function priorityRank(priority?: string) {
+	return ({ H: 3, M: 2, L: 1 } as { [key: string]: number })[priority || ''] || 0;
+}
+
 function linkify(text: string) {
 	const regex = urlRegex();
 
@@ -463,7 +467,7 @@ export default defineComponent({
 		const headers = computed(() => [
 			{ text: t('Project'), value: 'project' },
 			{ text: t('Description'), value: 'description' },
-			{ text: t('Priority'), value: 'priority' },
+			{ text: t('Priority'), value: 'priority', sort: (a: string, b: string) => priorityRank(b) - priorityRank(a) },
 			{ text: t('Scheduled'), value: 'scheduled' },
 			...(status.value === 'recurring'
 				? [{ text: t('Recur'), value: 'recur' }]
@@ -542,6 +546,7 @@ export default defineComponent({
 		const sortKey = ref('urgency');
 		const sortOptions = computed(() => [
 			{ value: 'urgency', text: t('Urgency') },
+			{ value: 'priority', text: t('Priority') },
 			{ value: 'due', text: t('Due') },
 			{ value: 'scheduled', text: t('Scheduled') },
 			{ value: 'project', text: t('Project') },
@@ -561,6 +566,9 @@ export default defineComponent({
 			const key = sortKey.value;
 			if (key === 'urgency')
 				return items.sort((a, b) => (b.urgency || 0) - (a.urgency || 0));
+			if (key === 'priority')
+				return items.sort((a, b) => priorityRank(b.priority) - priorityRank(a.priority)
+					|| (b.urgency || 0) - (a.urgency || 0));
 			return items.sort((a, b) => {
 				const x = (a as any)[key] || '';
 				const y = (b as any)[key] || '';
