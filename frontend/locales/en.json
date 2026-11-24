@@ -131,5 +131,14 @@
   "No tasks": "No tasks",
   "Card view": "Card view",
   "Table view": "Table view",
-  "Select task": "Select task"
+  "Select task": "Select task",
+  "Put on hold": "Put on hold",
+  "Tasks put on hold.": "Tasks put on hold.",
+  "Clear wait": "Clear wait",
+  "Wait removed.": "Wait removed.",
+  "Quick presets": "Quick presets",
+  "Tomorrow": "Tomorrow",
+  "+2 days": "+2 days",
+  "Next week": "Next week",
+  "1 month": "1 month"
 }

@@ -131,5 +131,14 @@
   "No tasks": "No hi ha tasques",
   "Card view": "Vista de targetes",
   "Table view": "Vista de taula",
-  "Select task": "Selecciona la tasca"
+  "Select task": "Selecciona la tasca",
+  "Put on hold": "Posar en espera",
+  "Tasks put on hold.": "Tasques posades en espera.",
+  "Clear wait": "Treure espera",
+  "Wait removed.": "Espera eliminada.",
+  "Quick presets": "Opcions ràpides",
+  "Tomorrow": "Demà",
+  "+2 days": "+2 dies",
+  "Next week": "Pròxima setmana",
+  "1 month": "1 mes"
 }

@@ -6,6 +6,12 @@
 			:text="confirmation.text"
 			@yes="confirmation.handler"
 		/>
+		<WaitDialog
+			v-model="showWaitDialog"
+			:tasks="waitTargetTasks"
+			@apply="applyWait"
+			@clear="applyClearWait"
+		/>
 		<TaskDialog v-model="showTaskDialog" :task="currentTask || undefined" :parent-task="parentTask || undefined" />
 		<ColumnDialog v-model="showColumnDialog" :active-columns="headers"/>
 		<div class="status-scroller px-1 pt-4">
@@ -72,8 +78,11 @@
 		<v-sheet v-if="selected.length" rounded class="task-batch-bar d-flex align-center flex-wrap px-3 py-1 mb-2" color="primary" dark>
 			<span class="mr-2">{{ $t('{count} selected', { count: selected.length }) }}</span>
 			<v-spacer />
-			<v-btn v-if="status === 'pending'" text large @click="completeTasks(selected)">
+			<v-btn v-if="status === 'pending' || status === 'waiting'" text large @click="completeTasks(selected)">
 				<v-icon left>mdi-check</v-icon>{{ $t('Done') }}
+			</v-btn>
+			<v-btn v-if="status === 'pending' || status === 'waiting'" text large @click="openWaitDialog(selected)">
+				<v-icon left>mdi-pause</v-icon>{{ $t('Put on hold') }}
 			</v-btn>
 			<v-btn v-if="status === 'completed' || status === 'deleted'" text large @click="restoreTasks(selected)">
 				<v-icon left>mdi-restore</v-icon>{{ $t('Restore') }}
@@ -133,7 +142,7 @@
 				<v-spacer />
 				<v-btn v-if="item.status !== 'deleted' && item.status !== 'recurring' && !item.recur"
 					icon large :title="$t('Add subtask')" @click="newSubtask(item)"><v-icon>mdi-plus</v-icon></v-btn>
-				<v-btn v-if="status === 'pending'" icon large color="success" :title="$t('Done')" @click="completeTasks([item])"><v-icon>mdi-check</v-icon></v-btn>
+				<v-btn v-if="status === 'pending' || status === 'waiting'" icon large color="success" :title="$t('Done')" @click="completeTasks([item])"><v-icon>mdi-check</v-icon></v-btn>
 				<v-btn v-if="status === 'completed' || status === 'deleted'" icon large :title="$t('Restore')" @click="restoreTasks([item])"><v-icon>mdi-restore</v-icon></v-btn>
 				<v-btn icon large :title="$t('Edit')" @click="editTask(item)"><v-icon>mdi-pencil</v-icon></v-btn>
 				<v-btn v-if="status !== 'deleted'" icon large :title="$t('Delete')" @click="deleteTasks([item])"><v-icon>mdi-delete</v-icon></v-btn>
@@ -181,7 +190,7 @@
 					<!-- Batch actions -->
 					<div class="pl-2 pt-2" v-show="selected.length">
 						<v-btn
-							v-show="status === 'pending'"
+							v-show="status === 'pending' || status === 'waiting'"
 							class="ma-1 green"
 							fab
 							small
@@ -190,6 +199,17 @@
 							@click="completeTasks(selected)"
 						>
 							<v-icon>mdi-check</v-icon>
+						</v-btn>
+						<v-btn
+							v-show="status === 'pending' || status === 'waiting'"
+							class="ma-1 orange darken-2"
+							fab
+							small
+							dark
+							:title="$t('Put on hold')"
+							@click="openWaitDialog(selected)"
+						>
+							<v-icon>mdi-pause</v-icon>
 						</v-btn>
 						<v-btn
 							v-show="status === 'completed' || status === 'deleted'"
@@ -325,7 +345,7 @@
 				<v-icon v-if="item.status !== 'deleted' && item.status !== 'recurring' && !item.recur"
 					class="ml-2" size="20px" :title="$t('Add subtask')" @click="newSubtask(item)">mdi-plus</v-icon>
 				<v-icon
-					v-show="status === 'pending'"
+					v-show="status === 'pending' || status === 'waiting'"
 					size="20px"
 					class="ml-2"
 					@click="completeTasks([item])"
@@ -374,6 +394,7 @@ import _ from 'lodash';
 import TaskDialog from '../components/TaskDialog.vue';
 import ConfirmationDialog from '../components/ConfirmationDialog.vue';
 import ColumnDialog from '../components/ColumnDialog.vue';
+import WaitDialog from '../components/WaitDialog.vue';
 import moment from 'moment';
 import urlRegex from 'url-regex-safe';
 import normalizeUrl from 'normalize-url';
@@ -725,6 +746,51 @@ export default defineComponent({
 			showConfirmationDialog.value = true;
 		};
 
+		const showWaitDialog = ref(false);
+		const waitTargetTasks = ref([] as Task[]);
+
+		const openWaitDialog = (tasks: Task[]) => {
+			waitTargetTasks.value = [...tasks];
+			showWaitDialog.value = true;
+		};
+
+		const applyWait = async (waitDate: string) => {
+			const tasks = waitTargetTasks.value;
+			try {
+				await store.dispatch('updateTasks', tasks.map(task => ({
+					...task,
+					wait: waitDate
+				})));
+			}
+			catch {
+				return;
+			}
+			selected.value = selected.value.filter(task => !tasks.some(t => t.uuid === task.uuid));
+			store.commit('setNotification', {
+				color: 'success',
+				text: t('Tasks put on hold.')
+			});
+		};
+
+		const applyClearWait = async () => {
+			const tasks = waitTargetTasks.value;
+			try {
+				await store.dispatch('updateTasks', tasks.map(task => {
+					const copy = { ...task };
+					delete copy.wait;
+					return copy;
+				}));
+			}
+			catch {
+				return;
+			}
+			selected.value = selected.value.filter(task => !tasks.some(t => t.uuid === task.uuid));
+			store.commit('setNotification', {
+				color: 'success',
+				text: t('Wait removed.')
+			});
+		};
+
 		const rowClass = (item: Task) => {
 			if (item.mask)
 				return 'recur-task';
@@ -784,7 +850,13 @@ export default defineComponent({
 			TaskDialog,
 			ConfirmationDialog,
 			ColumnDialog,
+			WaitDialog,
 			SubtaskTree,
+			showWaitDialog,
+			waitTargetTasks,
+			openWaitDialog,
+			applyWait,
+			applyClearWait
 		};
 	}
 });

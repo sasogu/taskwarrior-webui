@@ -131,5 +131,14 @@
   "No tasks": "No hay tareas",
   "Card view": "Vista de tarjetas",
   "Table view": "Vista de tabla",
-  "Select task": "Seleccionar tarea"
+  "Select task": "Seleccionar tarea",
+  "Put on hold": "Poner en espera",
+  "Tasks put on hold.": "Tareas puestas en espera.",
+  "Clear wait": "Quitar espera",
+  "Wait removed.": "Espera eliminada.",
+  "Quick presets": "Opciones rápidas",
+  "Tomorrow": "Mañana",
+  "+2 days": "+2 días",
+  "Next week": "Próxima semana",
+  "1 month": "1 mes"
 }
