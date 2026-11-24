@@ -27,6 +27,16 @@
 				</div>
 			</template>
 
+			<v-select
+				class="mb-3 ml-3"
+				:items="tagOptions"
+				:label="$t('Tag')"
+				v-model="tag"
+				style="max-width: 200px; min-width: 120px"
+				hide-details
+				clearable
+			/>
+
 			<v-spacer />
 			<v-select
 				class="mb-3 ml-3"
@@ -47,6 +57,7 @@ import { defineComponent, ref, computed, watch, onMounted, ComputedRef, useStore
 import TaskList from '../components/TaskList.vue';
 import { Task } from 'taskwarrior-lib';
 import { accessorType  } from "../store";
+import { t, localeState } from "../utils/i18n";
 
 export default defineComponent({
 	setup() {
@@ -113,13 +124,32 @@ export default defineComponent({
 				project.value = '';
 		});
 
+		// Tag filter, available in both display modes.
+		const tag = ref('');
+		const tags: ComputedRef<string[]> = computed(() => [...new Set(store.state.tasks
+			.filter((task: Task) => task.status === 'pending' || task.status === 'waiting')
+			.reduce((all: string[], task: Task) => all.concat(task.tags || []), []))].sort());
+		const tagOptions = computed(() => {
+			// Read the reactive language so the options follow language changes.
+			localeState.language;
+			return [
+				{ value: '', text: t('All tags') },
+				...tags.value.map(value => ({ value, text: value }))
+			];
+		});
+		watch(tags, () => {
+			if (tag.value && !tags.value.includes(tag.value)) tag.value = '';
+		});
+
+		const matchesTag = (task: Task) => !tag.value || (task.tags || []).includes(tag.value);
+
 		const tasks: ComputedRef<Task[]> = computed(() => {
 			if (mode.value === 'Tasks')
-				return store.state.tasks;
+				return store.state.tasks.filter(matchesTag);
 
 			if (project.value)
 				return store.state.tasks.filter(
-					(task: Task) => task.project === project.value
+					(task: Task) => task.project === project.value && matchesTag(task)
 				);
 
 			return [];
@@ -143,6 +173,8 @@ export default defineComponent({
 			tasks,
 			projects,
 			project,
+			tag,
+			tagOptions,
 			progress
 		};
 	}

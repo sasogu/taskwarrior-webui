@@ -24,10 +24,11 @@ Commit de implementación: `5c1985c`.
 Alcance: marcar actividad. El seguimiento completo de tiempo con Timewarrior
 sería una integración posterior.
 
-## 3. Búsqueda y filtros combinados — pendiente
+## 3. Búsqueda y filtros combinados — en curso
 
+- [x] Filtro por etiqueta, combinable con proyecto y conservado al cambiar de vista.
 - [ ] Búsqueda por texto.
-- [ ] Combinar proyecto, etiquetas, prioridad y fechas.
+- [ ] Combinar prioridad y fechas.
 - [ ] Vistas «Hoy», «Esta semana» y «Atrasadas».
 - [ ] Indicador de filtros activos y botón para limpiarlos.
 - [ ] Mantener comprensibles los árboles de subtareas al filtrar.

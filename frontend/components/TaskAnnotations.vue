@@ -27,7 +27,12 @@
 							<v-btn small color="primary" :disabled="!editText.trim()" @click="saveEdit">{{ $t('Save annotation') }}</v-btn>
 						</div>
 					</template>
-					<div v-else class="annotation-description">{{ annotation.description }}</div>
+					<div v-else class="annotation-description">
+						<template v-for="(part, partIndex) in annotationParts(annotation.description)">
+							<a v-if="part.url" :key="partIndex" :href="part.url" target="_blank" rel="noopener noreferrer">{{ part.text }}</a>
+							<span v-else :key="partIndex">{{ part.text }}</span>
+						</template>
+					</div>
 					<v-list-item-subtitle>{{ formatTaskDate(annotation.entry, $language) }}</v-list-item-subtitle>
 				</v-list-item-content>
 				<v-list-item-action v-if="editingIndex !== index" class="annotation-actions">
@@ -60,6 +65,23 @@ import { defineComponent, ref } from '@nuxtjs/composition-api';
 import { formatTaskDate } from '../utils/dates';
 
 type Annotation = { entry: string; description: string };
+type AnnotationPart = { text: string; url?: string };
+
+function annotationParts(description: string): AnnotationPart[] {
+	const parts: AnnotationPart[] = [];
+	const urls = /https?:\/\/[^\s<>"']+/g;
+	let start = 0;
+	let match: RegExpExecArray | null;
+	while ((match = urls.exec(description)) !== null) {
+		if (match.index > start) parts.push({ text: description.slice(start, match.index) });
+		const url = match[0].replace(/[.,;:!?)]*$/, '');
+		parts.push({ text: url, url });
+		start = match.index + url.length;
+		urls.lastIndex = start;
+	}
+	if (start < description.length) parts.push({ text: description.slice(start) });
+	return parts;
+}
 
 export default defineComponent({
 	props: {
@@ -96,12 +118,23 @@ export default defineComponent({
 			emit('input', props.value.filter((_annotation, index) => index !== pendingDelete.value));
 			pendingDelete.value = null;
 		};
-		return { newText, editingIndex, editText, pendingDelete, add, edit, saveEdit, cancelEdit, remove, formatTaskDate };
+		return { newText, editingIndex, editText, pendingDelete, add, edit, saveEdit, cancelEdit, remove, formatTaskDate, annotationParts };
 	}
 });
 </script>
 
 <style scoped>
 .annotation-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.annotation-description a {
+	display: block;
+	width: fit-content;
+	max-width: 100%;
+	min-height: 44px;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	margin: 6px 0 10px;
+	border-radius: 8px;
+	background: rgba(127, 127, 127, 0.12);
+}
 .annotation-actions { flex-direction: row; align-self: center; }
 </style>
